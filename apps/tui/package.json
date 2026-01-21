@@ -1,0 +1,11 @@
+{
+  "name": "@mprojectmanager/tui",
+  "private": true,
+  "scripts": {
+    "build": "make build",
+    "dev": "go run ./cmd/mkanban",
+    "test": "make test",
+    "lint": "make lint",
+    "fmt": "make fmt"
+  }
+}

@@ -1,0 +1,57 @@
+enum TaskType {
+  TASK
+  SUBTASK
+  MEETING
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+
+model Task {
+  id        String   @id @default(uuid())
+  columnId  String   @map("column_id")
+  parentId  String?  @map("parent_id")
+
+  title       String
+  description String?
+  position    Int          @default(0)
+  type        TaskType     @default(TASK)
+  priority    TaskPriority @default(LOW)
+
+
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  dueAt       DateTime?    @map("due_At")
+
+  column      Column   @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  parent      Task?    @relation("Subtasks", fields: [parentId], references: [id], onDelete: Cascade)
+  subtasks    Task[]   @relation("Subtasks")
+  logs        TaskLog[]
+
+
+}
+
+
+
+enum  TaskAction {
+  MOVE_TO_IN_PROGRESS
+  MOVE_TO_DONE
+}
+
+model TaskLog {
+  id        String   @id @default(uuid())
+  taskId    String   @map("task_id")
+
+  action     TaskAction 
+  value      String?
+
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)  
+
+  createdAt  DateTime @default(now()) @map("created_at") 
+  updatedAt  DateTime @updatedAt @map("updated_at")
+}

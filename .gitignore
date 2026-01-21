@@ -1,0 +1,25 @@
+# General
+.DS_Store
+.idea/
+.vscode/
+*.log
+.turbo/
+
+# Node / RN
+node_modules/
+.expo/
+.yarn/
+.pnp.*
+
+# Android / iOS
+**/android/build/
+**/ios/build/
+
+# Go
+.gocache/
+bin/
+dist/
+
+# Env
+.env
+.env.*
