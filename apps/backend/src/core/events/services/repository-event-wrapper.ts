@@ -17,7 +17,7 @@ export class RepositoryEventWrapper {
    * @param eventEmitter The event emitter to use for broadcasting events
    * @returns Proxied repository that emits events transparently
    */
-  static wrap<R>(
+  static wrap<R extends object>(
     repository: R,
     entityType: EntityType,
     eventEmitter: EntityEventEmitter,

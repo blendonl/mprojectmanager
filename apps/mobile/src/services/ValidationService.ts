@@ -1,11 +1,9 @@
+import { injectable } from "tsyringe";
 import { ValidationError } from '../core/exceptions';
 import { Board } from '../domain/entities/Board';
 import { Column } from '../domain/entities/Column';
 
-/**
- * Service for validating domain entities and their properties.
- * Throws ValidationError when validation fails.
- */
+@injectable()
 export class ValidationService {
   /**
    * Validate board name

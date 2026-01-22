@@ -1,3 +1,4 @@
+import { io, Socket } from 'socket.io-client';
 import { API_BASE_URL } from "../../core/config/ApiConfig";
 
 export type WebSocketEventType = 'connected' | 'disconnected' | 'message' | 'error';
@@ -32,75 +33,66 @@ const DEFAULT_OPTIONS: Required<WebSocketOptions> = {
  * - Type-safe message handling
  */
 export class WebSocketClient {
-  private ws: WebSocket | null = null;
-  private url: string;
+  private socket: Socket | null = null;
+  private path: string;
   private options: Required<WebSocketOptions>;
   private reconnectAttempts = 0;
-  private reconnectTimer: NodeJS.Timeout | null = null;
   private isIntentionallyClosed = false;
   private messageHandlers: Map<string, Set<WebSocketEventHandler>> = new Map();
   private eventHandlers: Map<WebSocketEventType, Set<WebSocketEventHandler>> = new Map();
 
   constructor(path: string, options: WebSocketOptions = {}) {
     this.options = { ...DEFAULT_OPTIONS, ...options };
-
-    // Convert HTTP(S) URL to WS(S)
-    const baseUrl = API_BASE_URL.replace(/^http/, 'ws');
-    this.url = `${baseUrl}${path}`;
+    this.path = path;
   }
 
   /**
    * Connect to the WebSocket server
    */
   connect(): void {
-    if (this.ws?.readyState === WebSocket.OPEN || this.ws?.readyState === WebSocket.CONNECTING) {
-      console.log('[WebSocketClient] Already connected or connecting');
+    if (this.socket?.connected) {
+      console.log('[WebSocketClient] Already connected');
       return;
     }
 
     this.isIntentionallyClosed = false;
 
     try {
-      console.log(`[WebSocketClient] Connecting to ${this.url}`);
-      this.ws = new WebSocket(this.url);
+      console.log(`[WebSocketClient] Connecting to ${API_BASE_URL}${this.path}`);
 
-      this.ws.onopen = () => {
+      this.socket = io(API_BASE_URL, {
+        path: this.path,
+        transports: ['websocket', 'polling'],
+        reconnection: false,
+        autoConnect: false,
+      });
+
+      this.socket.on('connect', () => {
         console.log('[WebSocketClient] Connected');
         this.reconnectAttempts = 0;
+        this.registerMessageHandlers();
         this.emit('connected', null);
-      };
+      });
 
-      this.ws.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data) as WebSocketMessage;
-          console.log('[WebSocketClient] Message received:', message.type);
-
-          // Emit to generic message handlers
-          this.emit('message', message);
-
-          // Emit to specific message type handlers
-          const handlers = this.messageHandlers.get(message.type);
-          if (handlers) {
-            handlers.forEach(handler => handler(message.payload));
-          }
-        } catch (error) {
-          console.error('[WebSocketClient] Failed to parse message:', error);
-        }
-      };
-
-      this.ws.onerror = (error) => {
-        console.error('[WebSocketClient] Error:', error);
-        this.emit('error', error);
-      };
-
-      this.ws.onclose = () => {
-        console.log('[WebSocketClient] Disconnected');
+      this.socket.on('disconnect', (reason) => {
+        console.log('[WebSocketClient] Disconnected:', reason);
         this.emit('disconnected', null);
 
         if (!this.isIntentionallyClosed && this.options.autoReconnect) {
           this.scheduleReconnect();
         }
-      };
+      });
+
+      this.socket.on('connect_error', (error) => {
+        console.error('[WebSocketClient] Error:', error);
+        this.emit('error', error);
+
+        if (!this.isIntentionallyClosed && this.options.autoReconnect) {
+          this.scheduleReconnect();
+        }
+      });
+
+      this.socket.connect();
     } catch (error) {
       console.error('[WebSocketClient] Failed to connect:', error);
       if (this.options.autoReconnect) {
@@ -115,14 +107,10 @@ export class WebSocketClient {
   disconnect(): void {
     this.isIntentionallyClosed = true;
 
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
-    }
-
-    if (this.ws) {
-      this.ws.close();
-      this.ws = null;
+    if (this.socket) {
+      this.socket.removeAllListeners();
+      this.socket.disconnect();
+      this.socket = null;
     }
 
     console.log('[WebSocketClient] Disconnected intentionally');
@@ -132,18 +120,12 @@ export class WebSocketClient {
    * Send a message to the server
    */
   send<T = any>(type: string, payload: T): void {
-    if (this.ws?.readyState !== WebSocket.OPEN) {
+    if (!this.socket?.connected) {
       console.warn('[WebSocketClient] Cannot send message, not connected');
       return;
     }
 
-    const message: WebSocketMessage<T> = {
-      type,
-      payload,
-      timestamp: new Date().toISOString(),
-    };
-
-    this.ws.send(JSON.stringify(message));
+    this.socket.emit(type, payload);
   }
 
   /**
@@ -156,7 +138,10 @@ export class WebSocketClient {
 
     this.messageHandlers.get(messageType)!.add(handler);
 
-    // Return unsubscribe function
+    if (this.socket) {
+      this.socket.on(messageType, handler);
+    }
+
     return () => {
       const handlers = this.messageHandlers.get(messageType);
       if (handlers) {
@@ -164,6 +149,10 @@ export class WebSocketClient {
         if (handlers.size === 0) {
           this.messageHandlers.delete(messageType);
         }
+      }
+
+      if (this.socket) {
+        this.socket.off(messageType, handler);
       }
     };
   }
@@ -194,7 +183,7 @@ export class WebSocketClient {
    * Check if connected
    */
   isConnected(): boolean {
-    return this.ws?.readyState === WebSocket.OPEN;
+    return this.socket?.connected ?? false;
   }
 
   private scheduleReconnect(): void {
@@ -204,13 +193,25 @@ export class WebSocketClient {
     }
 
     this.reconnectAttempts++;
-    const delay = this.options.reconnectInterval * Math.pow(2, this.reconnectAttempts - 1);
+    const delay = this.options.reconnectInterval;
 
     console.log(`[WebSocketClient] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.options.maxReconnectAttempts})`);
 
-    this.reconnectTimer = setTimeout(() => {
-      this.connect();
+    setTimeout(() => {
+      if (!this.isIntentionallyClosed) {
+        this.connect();
+      }
     }, delay);
+  }
+
+  private registerMessageHandlers(): void {
+    if (!this.socket) return;
+
+    this.messageHandlers.forEach((handlers, messageType) => {
+      handlers.forEach(handler => {
+        this.socket!.on(messageType, handler);
+      });
+    });
   }
 
   private emit<T>(eventType: WebSocketEventType, data: T): void {

@@ -1,0 +1,21 @@
+enum NoteType {
+  PERSONAL
+  WORK
+  STUDY
+  MEETING
+  PROJECT
+  TASK
+}
+
+model Note {
+  id        String   @id @default(uuid())
+
+  type      NoteType @default(PERSONAL)
+
+  title     String
+  content   String
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+

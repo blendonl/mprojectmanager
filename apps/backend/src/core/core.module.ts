@@ -4,6 +4,8 @@ import { BoardsCoreModule } from './boards/boards.core.module';
 import { ColumnsCoreModule } from './columns/columns.core.module';
 import { TasksCoreModule } from './tasks/tasks.core.module';
 import { EventsCoreModule } from './events/events.core.module';
+import { AgendaCoreModule } from './agenda/agenda.core.module';
+import { AgendaItemCoreModule } from './agenda-item/agenda-item.core.module';
 
 @Module({
   imports: [
@@ -12,6 +14,8 @@ import { EventsCoreModule } from './events/events.core.module';
     BoardsCoreModule,
     ColumnsCoreModule,
     TasksCoreModule,
+    AgendaCoreModule,
+    AgendaItemCoreModule,
   ],
 })
 export class CoreModule {}

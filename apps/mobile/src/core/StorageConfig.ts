@@ -3,8 +3,10 @@
  * Manages persistent configuration for boards directory and other storage settings
  */
 
+import { injectable, inject } from 'tsyringe';
 import * as FileSystem from 'expo-file-system/legacy';
 import { FileSystemManager } from '../infrastructure/storage/FileSystemManager';
+import { FILE_SYSTEM_MANAGER } from './di/tokens';
 
 interface StorageConfigData {
   boardsDirectory?: string;
@@ -18,18 +20,19 @@ function isContentUri(path: string): boolean {
   return path.startsWith('content://');
 }
 
+@injectable()
 export class StorageConfig {
   private configDir: string;
   private configFile: string;
   private cachedConfig: StorageConfigData | null = null;
   private fileSystemManager: FileSystemManager;
 
-  constructor(baseDirectory?: string, fileSystemManager?: FileSystemManager) {
+  constructor(@inject(FILE_SYSTEM_MANAGER) fileSystemManager: FileSystemManager) {
     const defaultDir = FileSystem.documentDirectory || '';
-    const docDir = baseDirectory || (defaultDir.endsWith('/') ? defaultDir.slice(0, -1) : defaultDir);
+    const docDir = defaultDir.endsWith('/') ? defaultDir.slice(0, -1) : defaultDir;
     this.configDir = `${docDir}/.mkanban/`;
     this.configFile = `${this.configDir}config.json`;
-    this.fileSystemManager = fileSystemManager || new FileSystemManager();
+    this.fileSystemManager = fileSystemManager;
   }
 
   /**

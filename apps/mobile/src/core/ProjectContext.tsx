@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { Project } from '../domain/entities/Project';
-import { getProjectService } from './DependencyContainer';
+import { Project } from '@features/projects/domain/entities/Project';
+import { getProjectService } from './di/hooks';
 
 interface ProjectContextValue {
   currentProject: Project | null;
@@ -26,8 +26,8 @@ export function ProjectProvider({ children }: ProjectProviderProps) {
     setIsLoading(true);
     try {
       const projectService = getProjectService();
-      const loadedProjects = await projectService.getAllProjects();
-      setProjects(loadedProjects);
+      const result = await projectService.getProjectsPaginated(1, 50);
+      setProjects(result.items);
     } catch (error) {
       console.error('Failed to load projects:', error);
     } finally {

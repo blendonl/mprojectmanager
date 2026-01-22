@@ -1,3 +1,4 @@
+import { injectable } from "tsyringe";
 import * as AuthSession from 'expo-auth-session';
 import * as SecureStore from 'expo-secure-store';
 import * as WebBrowser from 'expo-web-browser';
@@ -21,6 +22,7 @@ const discovery = {
   revocationEndpoint: 'https://oauth2.googleapis.com/revoke',
 };
 
+@injectable()
 export class GoogleCalendarRepository implements CalendarRepository {
   private clientId: string;
   private redirectUri: string;

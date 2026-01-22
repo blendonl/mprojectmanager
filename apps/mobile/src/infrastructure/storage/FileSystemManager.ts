@@ -4,6 +4,7 @@
  * Simplified to use internal storage only - backend integration for data persistence
  */
 
+import { injectable } from 'tsyringe';
 import * as FileSystem from 'expo-file-system/legacy';
 import { getSafeFilename } from "../../utils/stringUtils";
 import { FileSystemObserver } from "../../core/FileSystemObserver";
@@ -11,15 +12,16 @@ import { logger } from "../../utils/logger";
 
 export type NoteType = 'general' | 'meetings' | 'daily';
 
+@injectable()
 export class FileSystemManager {
   private baseDirectory: string;
   private customDataDirectory?: string;
   private observers: Set<FileSystemObserver> = new Set();
   private initialized: boolean = false;
 
-  constructor(baseDirectory?: string) {
+  constructor() {
     const docDir = FileSystem.documentDirectory || '';
-    this.baseDirectory = baseDirectory || docDir.endsWith('/') ? docDir.slice(0, -1) : docDir;
+    this.baseDirectory = docDir.endsWith('/') ? docDir.slice(0, -1) : docDir;
   }
 
   async initialize(): Promise<void> {
@@ -526,5 +528,3 @@ export class FileSystemManager {
   }
 }
 
-// Export a singleton instance for convenience
-export const fileSystemManager = new FileSystemManager();

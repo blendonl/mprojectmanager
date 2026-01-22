@@ -4,6 +4,8 @@ import { BoardsRestModule } from './boards/boards.rest.module';
 import { TaskRestModule } from './task/task.rest.module';
 import { ColumnRestModule } from './column/column.rest.module';
 import { WebSocketRestModule } from './websocket/websocket.rest.module';
+import { AgendaRestModule } from './agenda/agenda.rest.module';
+import { AgendaItemRestModule } from './agenda-item/agenda-item.rest.module';
 
 @Module({
   imports: [
@@ -12,6 +14,8 @@ import { WebSocketRestModule } from './websocket/websocket.rest.module';
     TaskRestModule,
     ColumnRestModule,
     WebSocketRestModule,
+    AgendaRestModule,
+    AgendaItemRestModule,
   ],
 })
 export class RestModule {}

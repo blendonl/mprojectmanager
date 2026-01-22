@@ -2,6 +2,7 @@
  * ActionsConfig - Configuration for actions/reminders system
  */
 
+import { injectable } from 'tsyringe';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface NotificationConfig {
@@ -57,6 +58,7 @@ const DEFAULT_CONFIG: ActionsConfiguration = {
 
 const CONFIG_KEY = '@mkanban:actions_config';
 
+@injectable()
 export class ActionsConfig {
   private config: ActionsConfiguration = DEFAULT_CONFIG;
   private initialized = false;

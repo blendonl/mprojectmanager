@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import AppNavigator from './src/ui/navigation/AppNavigator';
-import ErrorBoundary from './src/ui/components/ErrorBoundary';
+// AppNavigator removed - using Expo Router instead
+import { ErrorBoundary } from '@shared/components';
 import { ProjectProvider } from './src/core/ProjectContext';
-import { initializeContainer, setInitializationProgressCallback, getContainer } from './src/core/DependencyContainer';
+import { initializeContainer, setInitializationProgressCallback, resetContainer } from './src/core/di/container';
 import { View, ActivityIndicator, StyleSheet, Text, TouchableOpacity } from 'react-native';
-import theme from './src/ui/theme';
+import { theme } from '@shared/theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type AppState = 'initializing' | 'ready' | 'error';
@@ -31,7 +31,7 @@ export default function App() {
     setAppState('initializing');
     setInitStep('Initializing app...');
     try {
-      getContainer().clearInstances();
+      resetContainer();
       await initializeContainer();
       setAppState('ready');
     } catch (error) {

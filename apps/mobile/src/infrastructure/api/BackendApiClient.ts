@@ -1,7 +1,13 @@
+import { injectable } from 'tsyringe';
 import { API_BASE_URL } from "../../core/config/ApiConfig";
 
+@injectable()
 export class BackendApiClient {
-  constructor(private baseUrl: string = API_BASE_URL) {}
+  private baseUrl: string;
+
+  constructor() {
+    this.baseUrl = API_BASE_URL;
+  }
 
   buildUrl(path: string): string {
     return `${this.baseUrl}${path}`;

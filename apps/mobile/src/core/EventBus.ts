@@ -5,41 +5,45 @@
 
 export type EventType =
   // Task events
-  | 'task_created'
-  | 'task_updated'
-  | 'task_deleted'
-  | 'task_moved'
-  | 'task_state_change'
+  | "task_created"
+  | "task_updated"
+  | "task_deleted"
+  | "task_moved"
+  | "task_state_change"
   // Board events
-  | 'board_created'
-  | 'board_loaded'
-  | 'board_updated'
-  | 'board_deleted'
-  | 'board_switched'
-  | 'board_enter'
-  | 'board_exit'
+  | "board_created"
+  | "board_loaded"
+  | "board_updated"
+  | "board_deleted"
+  | "board_switched"
+  | "board_enter"
+  | "board_exit"
   // Column events
-  | 'column_created'
-  | 'column_updated'
-  | 'column_deleted'
+  | "column_created"
+  | "column_updated"
+  | "column_deleted"
   // Git events (for future expansion)
-  | 'git_branch_created'
-  | 'git_branch_deleted'
-  | 'git_branch_merged'
-  | 'git_commit_made'
+  | "git_branch_created"
+  | "git_branch_deleted"
+  | "git_branch_merged"
+  | "git_commit_made"
   // System events
-  | 'app_startup'
-  | 'app_shutdown'
-  | 'app_foreground'
-  | 'app_background'
+  | "app_startup"
+  | "app_shutdown"
+  | "app_foreground"
+  | "app_background"
   // File change events (legacy)
-  | 'file_changed'
-  | 'notes_invalidated'
-  | 'agenda_invalidated'
-  | 'boards_invalidated'
-  | 'projects_invalidated'
+  | "file_changed"
+  | "notes_invalidated"
+  | "agenda_invalidated"
+  | "boards_invalidated"
+  | "projects_invalidated"
+  | "project_deleted"
+  | "project_archived"
+  | "project_updated"
+  | "project_created"
   // Entity change events (backend/database changes)
-  | 'entity_changed';
+  | "entity_changed";
 
 export interface BaseEventPayload {
   timestamp: Date;
@@ -77,16 +81,16 @@ export interface SystemEventPayload extends BaseEventPayload {
 }
 
 export interface FileChangeEventPayload extends BaseEventPayload {
-  entityType: 'note' | 'agenda' | 'board' | 'project';
-  changeType: 'created' | 'modified' | 'deleted';
+  entityType: "note" | "agenda" | "board" | "project";
+  changeType: "created" | "modified" | "deleted";
   filePath: string;
   affectedIds?: string[];
 }
 
 export interface EntityChangeEventPayload extends BaseEventPayload {
   id: string;
-  entityType: 'agenda' | 'board' | 'task' | 'project' | 'note';
-  changeType: 'added' | 'modified' | 'deleted';
+  entityType: "agenda" | "board" | "task" | "project" | "note";
+  changeType: "added" | "modified" | "deleted";
   metadata?: Record<string, any>;
 }
 
@@ -100,7 +104,7 @@ export type EventPayload =
   | EntityChangeEventPayload;
 
 export type EventHandler<T extends EventPayload = EventPayload> = (
-  payload: T
+  payload: T,
 ) => void | Promise<void>;
 
 export interface EventSubscription {
@@ -112,7 +116,11 @@ export interface EventSubscription {
  */
 class EventBus {
   private listeners: Map<EventType, Set<EventHandler>> = new Map();
-  private eventHistory: Array<{ type: EventType; payload: EventPayload; timestamp: Date }> = [];
+  private eventHistory: Array<{
+    type: EventType;
+    payload: EventPayload;
+    timestamp: Date;
+  }> = [];
   private maxHistorySize = 100;
 
   /**
@@ -120,7 +128,7 @@ class EventBus {
    */
   subscribe<T extends EventPayload = EventPayload>(
     eventType: EventType,
-    handler: EventHandler<T>
+    handler: EventHandler<T>,
   ): EventSubscription {
     if (!this.listeners.has(eventType)) {
       this.listeners.set(eventType, new Set());
@@ -144,7 +152,10 @@ class EventBus {
   /**
    * Publish an event to all subscribers
    */
-  async publish<T extends EventPayload>(eventType: EventType, payload: T): Promise<void> {
+  async publish<T extends EventPayload>(
+    eventType: EventType,
+    payload: T,
+  ): Promise<void> {
     // Add timestamp if not present
     if (!payload.timestamp) {
       payload.timestamp = new Date();
@@ -202,10 +213,10 @@ class EventBus {
    */
   subscribeMany<T extends EventPayload = EventPayload>(
     eventTypes: EventType[],
-    handler: EventHandler<T>
+    handler: EventHandler<T>,
   ): EventSubscription {
     const subscriptions = eventTypes.map((eventType) =>
-      this.subscribe(eventType, handler)
+      this.subscribe(eventType, handler),
     );
 
     return {
@@ -246,7 +257,10 @@ class EventBus {
   /**
    * Get event history
    */
-  getHistory(eventType?: EventType, limit?: number): Array<{ type: EventType; payload: EventPayload; timestamp: Date }> {
+  getHistory(
+    eventType?: EventType,
+    limit?: number,
+  ): Array<{ type: EventType; payload: EventPayload; timestamp: Date }> {
     let history = eventType
       ? this.eventHistory.filter((e) => e.type === eventType)
       : this.eventHistory;

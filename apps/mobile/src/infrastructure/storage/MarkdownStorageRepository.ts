@@ -4,6 +4,7 @@
  * Ported from Python: src/infrastructure/storage/markdown_storage_repository.py
  */
 
+import { injectable, inject } from "tsyringe";
 import { FileSystemManager } from "./FileSystemManager";
 import { MarkdownParser } from "./MarkdownParser";
 import { BoardPersistence } from "./BoardPersistence";
@@ -12,14 +13,14 @@ import { StorageRepository } from "../../domain/repositories/StorageRepository";
 import { Board } from "../../domain/entities/Board";
 import { Column } from "../../domain/entities/Column";
 import { Task } from "../../domain/entities/Task";
+import { FILE_SYSTEM_MANAGER } from "../../core/di/tokens";
 
+@injectable()
 export class MarkdownStorageRepository implements StorageRepository {
-  private fileSystem: FileSystemManager;
   private parser: MarkdownParser;
   private persistence: BoardPersistence;
 
-  constructor(fileSystem: FileSystemManager) {
-    this.fileSystem = fileSystem;
+  constructor(@inject(FILE_SYSTEM_MANAGER) private fileSystem: FileSystemManager) {
     this.parser = new MarkdownParser(fileSystem);
     this.persistence = new BoardPersistence(fileSystem, this.parser);
   }

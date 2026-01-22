@@ -1,0 +1,15 @@
+model Column {
+  id      String @id @default(uuid())
+  boardId String @map("board_id")
+
+  name     String
+  color    String
+  position Int    @default(0)
+  limit    Int?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  board Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  tasks Task[]
+}

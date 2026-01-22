@@ -1,0 +1,35 @@
+export const BOARD_REPOSITORY = "BoardRepository";
+export const COLUMN_REPOSITORY = "ColumnRepository";
+export const TASK_REPOSITORY = "TaskRepository";
+export const PROJECT_REPOSITORY = "ProjectRepository";
+export const AGENDA_REPOSITORY = "AgendaRepository";
+export const MARKDOWN_AGENDA_REPOSITORY = "MarkdownAgendaRepository";
+export const NOTE_REPOSITORY = "NoteRepository";
+export const GOAL_REPOSITORY = "GoalRepository";
+export const TIME_LOG_REPOSITORY = "TimeLogRepository";
+export const CALENDAR_REPOSITORY = "CalendarRepository";
+export const STORAGE_REPOSITORY = "StorageRepository";
+export const ACTION_REPOSITORY = "ActionRepository";
+
+export const BOARD_SERVICE = "BoardService";
+export const PROJECT_SERVICE = "ProjectService";
+export const AGENDA_SERVICE = "AgendaService";
+export const NOTE_SERVICE = "NoteService";
+export const TASK_SERVICE = "TaskService";
+export const GOAL_SERVICE = "GoalService";
+export const VALIDATION_SERVICE = "ValidationService";
+export const TIME_TRACKING_SERVICE = "TimeTrackingService";
+export const CALENDAR_SYNC_SERVICE = "CalendarSyncService";
+export const NOTIFICATION_SERVICE = "NotificationService";
+export const UNFINISHED_TASKS_SERVICE = "UnfinishedTasksService";
+export const ACTION_SERVICE = "ActionService";
+export const ALERT_SERVICE = "AlertService";
+
+export const FILE_SYSTEM_MANAGER = "FileSystemManager";
+export const STORAGE_CONFIG = "StorageConfig";
+export const ACTIONS_CONFIG = "ActionsConfig";
+export const BACKEND_API_CLIENT = "BackendApiClient";
+export const DAEMON_RUNNER = "DaemonRunner";
+export const WEBSOCKET_MANAGER = "WebSocketManager";
+export const EVENT_BUS = "EventBus";
+export const CACHE_MANAGER = "CacheManager";

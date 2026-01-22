@@ -1,4 +1,4 @@
-export type EntityType = 'project' | 'board' | 'column' | 'task';
+export type EntityType = 'project' | 'board' | 'column' | 'task' | 'agenda' | 'agenda-item';
 export type ChangeType = 'added' | 'modified' | 'deleted';
 
 export interface EntityEvent<T = any> {
