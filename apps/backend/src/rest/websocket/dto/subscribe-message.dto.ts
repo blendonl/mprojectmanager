@@ -4,7 +4,21 @@ import { EntityType } from '../../../core/events/interfaces/entity-event.interfa
 export class SubscribeMessageDto {
   @IsOptional()
   @IsArray()
-  @IsEnum(['project', 'board', 'column', 'task'], { each: true })
+  @IsEnum(
+    [
+      'project',
+      'board',
+      'column',
+      'task',
+      'agenda',
+      'agenda-item',
+      'routine',
+      'routine-task',
+      'routine-task-log',
+      'alarm-plan',
+    ],
+    { each: true },
+  )
   entityTypes?: EntityType[];
 
   @IsOptional()

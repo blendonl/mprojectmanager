@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -11,6 +12,15 @@ async function bootstrap() {
     origin: true,
     credentials: true,
   });
+
+  // Swagger configuration
+  const config = new DocumentBuilder()
+    .setTitle('MProject Manager API')
+    .setDescription('API for managing projects, tasks, agendas, and more')
+    .setVersion('2.0')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
 
   app.useGlobalPipes(
     new ValidationPipe({

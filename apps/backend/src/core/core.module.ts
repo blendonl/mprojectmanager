@@ -6,6 +6,8 @@ import { TasksCoreModule } from './tasks/tasks.core.module';
 import { EventsCoreModule } from './events/events.core.module';
 import { AgendaCoreModule } from './agenda/agenda.core.module';
 import { AgendaItemCoreModule } from './agenda-item/agenda-item.core.module';
+import { RoutinesCoreModule } from './routines/routines.core.module';
+import { AlarmsCoreModule } from './alarms/alarms.core.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { AgendaItemCoreModule } from './agenda-item/agenda-item.core.module';
     TasksCoreModule,
     AgendaCoreModule,
     AgendaItemCoreModule,
+    RoutinesCoreModule,
+    AlarmsCoreModule,
   ],
 })
 export class CoreModule {}
