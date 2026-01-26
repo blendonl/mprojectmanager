@@ -1,7 +1,7 @@
-import React from 'react';
-import { Tabs } from 'expo-router';
-import FloatingTabBar from '@shared/components/FloatingTabBar';
-import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import React from "react";
+import { Tabs } from "expo-router";
+import FloatingTabBar from "@shared/components/FloatingTabBar";
+import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
 export default function TabLayout() {
   return (
@@ -16,37 +16,37 @@ export default function TabLayout() {
       <Tabs.Screen
         name="projects"
         options={{
-          title: 'Projects',
+          title: "Projects",
         }}
       />
       <Tabs.Screen
         name="boards"
         options={{
-          title: 'Boards',
+          title: "Boards",
         }}
       />
       <Tabs.Screen
         name="agenda"
         options={{
-          title: 'Agenda',
+          title: "Agenda",
         }}
       />
       <Tabs.Screen
         name="goals"
         options={{
-          title: 'Goals',
+          title: "Goals",
         }}
       />
       <Tabs.Screen
         name="routines"
         options={{
-          title: 'Routines',
+          title: "Routines",
         }}
       />
       <Tabs.Screen
         name="notes"
         options={{
-          title: 'Notes',
+          title: "",
         }}
       />
     </Tabs>

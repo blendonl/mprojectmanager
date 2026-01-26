@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -8,36 +8,45 @@ import {
   RefreshControl,
   TextInput,
   ScrollView,
-} from 'react-native';
-import { Screen } from '@shared/components/Screen';
-import { useRouter } from 'expo-router';
-import theme from '@shared/theme';
-import { spacing } from '@shared/theme/spacing';
-import { getNoteService, getProjectService, getBoardService, getTaskService } from '@core/di/hooks';
-import { Note, NoteType } from '@features/notes/domain/entities/Note';
-import { useAutoRefresh } from '@shared/hooks/useAutoRefresh';
-import AutoRefreshIndicator from '@shared/components/AutoRefreshIndicator';
-import AppIcon, { AppIconName } from '@shared/components/icons/AppIcon';
+} from "react-native";
+import { Screen } from "@shared/components/Screen";
+import { useRouter } from "expo-router";
+import theme from "@shared/theme";
+import { spacing } from "@shared/theme/spacing";
+import {
+  getNoteService,
+  getProjectService,
+  getBoardService,
+  getTaskService,
+} from "@core/di/hooks";
+import { Note, NoteType } from "@features/notes/domain/entities/Note";
+import { useAutoRefresh } from "@shared/hooks/useAutoRefresh";
+import AutoRefreshIndicator from "@shared/components/AutoRefreshIndicator";
+import AppIcon, { AppIconName } from "@shared/components/icons/AppIcon";
 
-const NOTE_TYPE_FILTERS: { value: NoteType | 'all'; label: string; icon: AppIconName }[] = [
-  { value: 'all', label: 'All', icon: 'stack' },
-  { value: 'general', label: 'Notes', icon: 'note' },
-  { value: 'meeting', label: 'Meetings', icon: 'users' },
-  { value: 'daily', label: 'Daily', icon: 'calendar' },
+const NOTE_TYPE_FILTERS: {
+  value: NoteType | "all";
+  label: string;
+  icon: AppIconName;
+}[] = [
+  { value: "all", label: "All", icon: "stack" },
+  { value: "general", label: "Notes", icon: "note" },
+  { value: "meeting", label: "Meetings", icon: "users" },
+  { value: "daily", label: "Daily", icon: "calendar" },
 ];
 
 const NOTE_TYPE_ICONS: Record<NoteType, AppIconName> = {
-  general: 'note',
-  meeting: 'users',
-  daily: 'calendar',
-  task: 'check',
+  general: "note",
+  meeting: "users",
+  daily: "calendar",
+  task: "check",
 };
 
 const NOTE_TYPE_LABELS: Record<NoteType, string> = {
-  general: 'Note',
-  meeting: 'Meeting',
-  daily: 'Daily',
-  task: 'Task',
+  general: "Note",
+  meeting: "Meeting",
+  daily: "Daily",
+  task: "Task",
 };
 
 export default function NotesListScreen() {
@@ -46,9 +55,11 @@ export default function NotesListScreen() {
   const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState<NoteType | 'all'>('all');
-  const [entityNames, setEntityNames] = useState<Map<string, string>>(new Map());
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedType, setSelectedType] = useState<NoteType | "all">("all");
+  const [entityNames, setEntityNames] = useState<Map<string, string>>(
+    new Map(),
+  );
 
   const loadNotes = useCallback(async () => {
     try {
@@ -57,13 +68,13 @@ export default function NotesListScreen() {
       setNotes(loadedNotes);
       await loadEntityNames(loadedNotes);
     } catch (error) {
-      console.error('Failed to load notes:', error);
+      console.error("Failed to load notes:", error);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const { isAutoRefreshing } = useAutoRefresh(['notes_invalidated'], loadNotes);
+  const { isAutoRefreshing } = useAutoRefresh(["notes_invalidated"], loadNotes);
 
   const loadEntityNames = async (notes: Note[]) => {
     try {
@@ -73,31 +84,31 @@ export default function NotesListScreen() {
       const names = new Map<string, string>();
 
       const allEntityIds = new Set<string>();
-      notes.forEach(note => {
-        note.project_ids.forEach(id => allEntityIds.add(`p_${id}`));
-        note.board_ids.forEach(id => allEntityIds.add(`b_${id}`));
-        note.task_ids.forEach(id => allEntityIds.add(`t_${id}`));
+      notes.forEach((note) => {
+        note.project_ids.forEach((id) => allEntityIds.add(`p_${id}`));
+        note.board_ids.forEach((id) => allEntityIds.add(`b_${id}`));
+        note.task_ids.forEach((id) => allEntityIds.add(`t_${id}`));
       });
 
       for (const entityId of allEntityIds) {
         try {
-          const [type, id] = entityId.split('_');
-          if (type === 'p') {
+          const [type, id] = entityId.split("_");
+          if (type === "p") {
             const project = await projectService.getProjectById(id);
             if (project) names.set(entityId, project.name);
-          } else if (type === 'b') {
+          } else if (type === "b") {
             const board = await boardService.getBoardById(id);
             if (board) names.set(entityId, board.name);
-          } else if (type === 't') {
+          } else if (type === "t") {
             // const task = await taskService.getTask(id);
             // if (task) names.set(entityId, task.title);
           }
-        } catch (e) { }
+        } catch (e) {}
       }
 
       setEntityNames(names);
     } catch (error) {
-      console.error('Failed to load entity names:', error);
+      console.error("Failed to load entity names:", error);
     }
   };
 
@@ -108,15 +119,16 @@ export default function NotesListScreen() {
   useEffect(() => {
     let filtered = notes;
 
-    if (selectedType !== 'all') {
-      filtered = filtered.filter(n => n.note_type === selectedType);
+    if (selectedType !== "all") {
+      filtered = filtered.filter((n) => n.note_type === selectedType);
     }
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(n =>
-        n.title.toLowerCase().includes(query) ||
-        n.content.toLowerCase().includes(query)
+      filtered = filtered.filter(
+        (n) =>
+          n.title.toLowerCase().includes(query) ||
+          n.content.toLowerCase().includes(query),
       );
     }
 
@@ -131,15 +143,15 @@ export default function NotesListScreen() {
 
   const noteCountLabel = useMemo(() => {
     const count = filteredNotes.length;
-    const suffix = count === 1 ? 'note' : 'notes';
-    if (selectedType === 'all') {
+    const suffix = count === 1 ? "note" : "notes";
+    if (selectedType === "all") {
       return `${count} ${suffix}`;
     }
     return `${count} ${suffix} • ${NOTE_TYPE_LABELS[selectedType as NoteType]}`;
   }, [filteredNotes.length, selectedType]);
 
   const handleCreateNote = () => {
-    router.push('/notes/new');
+    router.push("/notes/new");
   };
 
   const handleCreateDailyNote = async () => {
@@ -148,7 +160,7 @@ export default function NotesListScreen() {
       const dailyNote = await noteService.getTodaysDailyNote();
       router.push(`/notes/${dailyNote.id}`);
     } catch (error) {
-      console.error('Failed to create daily note:', error);
+      console.error("Failed to create daily note:", error);
     }
   };
 
@@ -162,34 +174,41 @@ export default function NotesListScreen() {
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
     if (days === 0) {
-      return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      return date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+      });
     } else if (days === 1) {
-      return 'Yesterday';
+      return "Yesterday";
     } else if (days < 7) {
-      return date.toLocaleDateString('en-US', { weekday: 'short' });
+      return date.toLocaleDateString("en-US", { weekday: "short" });
     }
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
   const renderEntityIndicators = (note: Note) => {
     const entities: { icon: AppIconName; name: string }[] = [];
 
-    note.project_ids.slice(0, 1).forEach(id => {
+    note.project_ids.slice(0, 1).forEach((id) => {
       const name = entityNames.get(`p_${id}`) || id;
-      entities.push({ icon: 'folder' as AppIconName, name });
+      entities.push({ icon: "folder" as AppIconName, name });
     });
 
-    note.board_ids.slice(0, 1).forEach(id => {
+    note.board_ids.slice(0, 1).forEach((id) => {
       const name = entityNames.get(`b_${id}`) || id;
-      entities.push({ icon: 'board' as AppIconName, name });
+      entities.push({ icon: "board" as AppIconName, name });
     });
 
     const taskCount = note.task_ids.length;
     if (taskCount > 0) {
-      entities.push({ icon: 'check', name: `${taskCount} task${taskCount > 1 ? 's' : ''}` });
+      entities.push({
+        icon: "check",
+        name: `${taskCount} task${taskCount > 1 ? "s" : ""}`,
+      });
     }
 
-    const totalEntities = note.project_ids.length + note.board_ids.length + note.task_ids.length;
+    const totalEntities =
+      note.project_ids.length + note.board_ids.length + note.task_ids.length;
     const showing = entities.length;
     const remaining = totalEntities - showing;
 
@@ -198,7 +217,10 @@ export default function NotesListScreen() {
     return (
       <View style={styles.entityIndicators}>
         {entities.map((entity, index) => (
-          <View key={`${entity.name}-${index}`} style={styles.entityIndicatorItem}>
+          <View
+            key={`${entity.name}-${index}`}
+            style={styles.entityIndicatorItem}
+          >
             <AppIcon name={entity.icon} size={12} color={theme.text.tertiary} />
             <Text style={styles.entityIndicatorText}>{entity.name}</Text>
             {index < entities.length - 1 && (
@@ -228,30 +250,40 @@ export default function NotesListScreen() {
           </View>
           <View style={styles.noteBody}>
             <View style={styles.noteHeader}>
-              <Text style={styles.noteTitle} numberOfLines={1}>{note.title}</Text>
+              <Text style={styles.noteTitle} numberOfLines={1}>
+                {note.title}
+              </Text>
               <Text style={styles.noteDate}>{formatDate(note.updated_at)}</Text>
             </View>
             {note.preview && (
-              <Text style={styles.notePreview} numberOfLines={3}>{note.preview}</Text>
+              <Text style={styles.notePreview} numberOfLines={3}>
+                {note.preview}
+              </Text>
             )}
             {renderEntityIndicators(note)}
             <View style={styles.noteMeta}>
               <View style={styles.noteMetaLeft}>
                 {note.tags.length > 0 && (
                   <View style={styles.tagRow}>
-                    {note.tags.slice(0, 3).map(tag => (
+                    {note.tags.slice(0, 3).map((tag) => (
                       <View key={tag} style={styles.tag}>
                         <Text style={styles.tagText}>#{tag}</Text>
                       </View>
                     ))}
                     {note.tags.length > 3 && (
-                      <Text style={styles.moreTagsText}>+{note.tags.length - 3}</Text>
+                      <Text style={styles.moreTagsText}>
+                        +{note.tags.length - 3}
+                      </Text>
                     )}
                   </View>
                 )}
                 <View style={styles.noteTypeBadge}>
                   <View style={styles.noteTypeContent}>
-                    <AppIcon name={icon} size={12} color={theme.text.secondary} />
+                    <AppIcon
+                      name={icon}
+                      size={12}
+                      color={theme.text.secondary}
+                    />
                     <Text style={styles.noteTypeText}>
                       {NOTE_TYPE_LABELS[note.note_type]}
                     </Text>
@@ -280,7 +312,7 @@ export default function NotesListScreen() {
           onChangeText={setSearchQuery}
         />
         {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery('')}>
+          <TouchableOpacity onPress={() => setSearchQuery("")}>
             <Text style={styles.clearButton}>×</Text>
           </TouchableOpacity>
         )}
@@ -290,7 +322,7 @@ export default function NotesListScreen() {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.typeFilters}
       >
-        {NOTE_TYPE_FILTERS.map(filter => (
+        {NOTE_TYPE_FILTERS.map((filter) => (
           <TouchableOpacity
             key={filter.value}
             style={[
@@ -303,13 +335,19 @@ export default function NotesListScreen() {
               <AppIcon
                 name={filter.icon}
                 size={14}
-                color={selectedType === filter.value ? theme.background.primary : theme.text.secondary}
+                color={
+                  selectedType === filter.value
+                    ? theme.background.primary
+                    : theme.text.secondary
+                }
               />
             </View>
-            <Text style={[
-              styles.filterLabel,
-              selectedType === filter.value && styles.filterLabelActive,
-            ]}>
+            <Text
+              style={[
+                styles.filterLabel,
+                selectedType === filter.value && styles.filterLabelActive,
+              ]}
+            >
               {filter.label}
             </Text>
           </TouchableOpacity>
@@ -326,10 +364,16 @@ export default function NotesListScreen() {
         Create notes to capture ideas, meeting minutes, and daily reflections.
       </Text>
       <View style={styles.emptyActions}>
-        <TouchableOpacity style={styles.createButton} onPress={handleCreateNote}>
+        <TouchableOpacity
+          style={styles.createButton}
+          onPress={handleCreateNote}
+        >
           <Text style={styles.createButtonText}>New Note</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.dailyButton} onPress={handleCreateDailyNote}>
+        <TouchableOpacity
+          style={styles.dailyButton}
+          onPress={handleCreateDailyNote}
+        >
           <Text style={styles.dailyButtonText}>Today's Journal</Text>
         </TouchableOpacity>
       </View>
@@ -347,10 +391,6 @@ export default function NotesListScreen() {
   return (
     <Screen hasTabBar>
       <View style={styles.screenHeader}>
-        <View style={styles.headerText}>
-          <Text style={styles.headerTitle}>Notes</Text>
-          <Text style={styles.headerSubtitle}>{noteCountLabel}</Text>
-        </View>
         <View style={styles.headerRight}>
           <AutoRefreshIndicator isRefreshing={isAutoRefreshing} />
         </View>
@@ -361,11 +401,15 @@ export default function NotesListScreen() {
         data={filteredNotes}
         keyExtractor={(item) => item.id}
         renderItem={renderNoteCard}
-        ListEmptyComponent={searchQuery || selectedType !== 'all' ? (
-          <View style={styles.noResults}>
-            <Text style={styles.noResultsText}>No notes found</Text>
-          </View>
-        ) : renderEmpty()}
+        ListEmptyComponent={
+          searchQuery || selectedType !== "all" ? (
+            <View style={styles.noResults}>
+              <Text style={styles.noResultsText}>No notes found</Text>
+            </View>
+          ) : (
+            renderEmpty()
+          )
+        }
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -373,7 +417,9 @@ export default function NotesListScreen() {
             tintColor={theme.accent.primary}
           />
         }
-        contentContainerStyle={filteredNotes.length === 0 ? styles.emptyList : styles.list}
+        contentContainerStyle={
+          filteredNotes.length === 0 ? styles.emptyList : styles.list
+        }
         keyboardShouldPersistTaps="handled"
       />
 
@@ -400,7 +446,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: theme.text.primary,
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 0.4,
   },
   headerSubtitle: {
@@ -408,13 +454,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   headerRight: {
-    position: 'absolute',
+    position: "absolute",
     right: spacing.lg,
     top: spacing.md,
   },
   loadingText: {
     color: theme.text.secondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: spacing.xl,
   },
   filterContainer: {
@@ -422,8 +468,8 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md,
   },
   searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: spacing.md,
     backgroundColor: theme.glass.tint.neutral,
     borderRadius: 16,
@@ -443,26 +489,26 @@ const styles = StyleSheet.create({
   clearButton: {
     fontSize: 24,
     color: theme.text.muted,
-    fontWeight: '300',
+    fontWeight: "300",
   },
   typeFilters: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.sm,
     paddingRight: spacing.md,
   },
   filterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: 18,
     backgroundColor: theme.glass.tint.neutral,
     borderWidth: 1,
-    borderColor: 'transparent',
+    borderColor: "transparent",
   },
   filterButtonActive: {
-    backgroundColor: theme.accent.primary + '25',
+    backgroundColor: theme.accent.primary + "25",
     borderColor: theme.accent.primary,
   },
   filterIcon: {
@@ -471,11 +517,11 @@ const styles = StyleSheet.create({
   filterLabel: {
     color: theme.text.secondary,
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   filterLabelActive: {
     color: theme.accent.primary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   list: {
     paddingHorizontal: spacing.lg,
@@ -492,15 +538,15 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     borderWidth: 1,
     borderColor: theme.border.primary,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
   noteCardTop: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     gap: spacing.md,
   },
   noteIconWrap: {
@@ -510,19 +556,18 @@ const styles = StyleSheet.create({
     backgroundColor: theme.glass.tint.neutral,
     borderWidth: 1,
     borderColor: theme.glass.border,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 2,
   },
-  noteIcon: {
-  },
+  noteIcon: {},
   noteBody: {
     flex: 1,
   },
   noteHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 6,
     gap: spacing.sm,
   },
@@ -530,12 +575,12 @@ const styles = StyleSheet.create({
     flex: 1,
     color: theme.text.primary,
     fontSize: 17,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   noteDate: {
     color: theme.text.muted,
     fontSize: 11,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 0.6,
   },
   notePreview: {
@@ -545,13 +590,13 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   entityIndicators: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     marginBottom: spacing.sm,
   },
   entityIndicatorItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
     marginRight: spacing.xs,
   },
@@ -565,25 +610,25 @@ const styles = StyleSheet.create({
     marginLeft: spacing.xs,
   },
   noteMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     gap: spacing.sm,
   },
   noteMetaLeft: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
     gap: spacing.sm,
   },
   tagRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
   },
   tag: {
-    backgroundColor: theme.accent.primary + '20',
+    backgroundColor: theme.accent.primary + "20",
     paddingHorizontal: spacing.sm,
     paddingVertical: 3,
     borderRadius: 10,
@@ -592,7 +637,7 @@ const styles = StyleSheet.create({
   tagText: {
     color: theme.accent.primary,
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   moreTagsText: {
     color: theme.text.muted,
@@ -607,14 +652,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   noteTypeContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
   noteTypeText: {
     color: theme.text.secondary,
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   wordCount: {
     color: theme.text.muted,
@@ -622,24 +667,24 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: spacing.xl,
   },
   emptyTitle: {
     color: theme.text.primary,
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: spacing.sm,
   },
   emptyText: {
     color: theme.text.secondary,
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: spacing.xl,
   },
   emptyActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.md,
   },
   createButton: {
@@ -651,7 +696,7 @@ const styles = StyleSheet.create({
   createButtonText: {
     color: theme.background.primary,
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   dailyButton: {
     backgroundColor: theme.glass.tint.neutral,
@@ -664,28 +709,28 @@ const styles = StyleSheet.create({
   dailyButtonText: {
     color: theme.text.primary,
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   noResults: {
     padding: spacing.xl,
-    alignItems: 'center',
+    alignItems: "center",
   },
   noResultsText: {
     color: theme.text.secondary,
     fontSize: 14,
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     right: spacing.lg + 8,
     bottom: 24 + 80,
     width: 58,
     height: 58,
     borderRadius: 22,
     backgroundColor: theme.accent.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     elevation: 8,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
