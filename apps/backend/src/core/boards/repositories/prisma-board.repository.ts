@@ -65,7 +65,14 @@ export class PrismaBoardRepository implements BoardRepository {
   }
 
   async findById(id: string): Promise<Board | null> {
-    return this.prisma.board.findUnique({ where: { id } });
+    return this.prisma.board.findUnique({
+      where: { id },
+      include: {
+        columns: {
+          orderBy: { position: 'asc' },
+        },
+      },
+    });
   }
 
   async update(id: string, data: BoardUpdateData): Promise<Board | null> {

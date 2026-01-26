@@ -51,4 +51,17 @@ export class TaskPrismaRepository implements TaskRepository {
       orderBy: { position: 'asc' },
     });
   }
+
+  async moveToColumn(taskId: string, columnId: string): Promise<Task> {
+    return this.prisma.task.update({
+      where: { id: taskId },
+      data: { columnId },
+    });
+  }
+
+  async countByColumnId(columnId: string): Promise<number> {
+    return this.prisma.task.count({
+      where: { columnId },
+    });
+  }
 }

@@ -32,6 +32,11 @@ export class AgendaItemGetOverdueUseCase {
             },
           },
         },
+        routineTask: {
+          include: {
+            routine: true,
+          },
+        },
       },
     });
 

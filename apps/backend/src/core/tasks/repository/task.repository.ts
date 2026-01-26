@@ -10,4 +10,6 @@ export interface TaskRepository {
   findById(id: string): Promise<Task | null>;
   update(id: string, data: TaskUpdateData): Promise<Task>;
   delete(id: string): Promise<void>;
+  moveToColumn(taskId: string, columnId: string): Promise<Task>;
+  countByColumnId(columnId: string): Promise<number>;
 }

@@ -34,6 +34,11 @@ export class AgendaGetDateRangeUseCase {
                 },
               },
             },
+            routineTask: {
+              include: {
+                routine: true,
+              },
+            },
           },
           orderBy: { position: 'asc' },
         },

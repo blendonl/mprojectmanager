@@ -9,20 +9,22 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { BoardDto } from 'shared-types';
 import { BoardsCoreService } from 'src/core/boards/service/boards.core.service';
 import { BoardCreateRequest } from '../dto/board.create.request';
 import { BoardListQuery } from '../dto/board.list.query';
-import { BoardListResponse } from '../dto/board.list.response';
-import { BoardResponse } from '../dto/board.response';
 import { BoardUpdateRequest } from '../dto/board.update.request';
 import { BoardMapper } from '../board.mapper';
 
+@ApiTags('boards')
 @Controller('boards')
 export class BoardsController {
   constructor(private readonly boardsService: BoardsCoreService) {}
 
   @Post()
-  async create(@Body() body: BoardCreateRequest): Promise<BoardResponse> {
+  @ApiOperation({ summary: 'Create a new board' })
+  async create(@Body() body: BoardCreateRequest): Promise<BoardDto> {
     const board = await this.boardsService.createBoard({
       id: body.id,
       name: body.name,
@@ -34,7 +36,8 @@ export class BoardsController {
   }
 
   @Get()
-  async list(@Query() query: BoardListQuery): Promise<BoardListResponse> {
+  @ApiOperation({ summary: 'List all boards' })
+  async list(@Query() query: BoardListQuery) {
     const result = await this.boardsService.getBoards({
       page: query.page,
       limit: query.limit,
@@ -51,7 +54,8 @@ export class BoardsController {
   }
 
   @Get(':id')
-  async getOne(@Param('id') id: string): Promise<BoardResponse> {
+  @ApiOperation({ summary: 'Get board by ID' })
+  async getOne(@Param('id') id: string): Promise<BoardDto> {
     const board = await this.boardsService.getBoardById(id);
 
     if (!board) {
@@ -62,10 +66,11 @@ export class BoardsController {
   }
 
   @Put(':id')
+  @ApiOperation({ summary: 'Update board' })
   async update(
     @Param('id') id: string,
     @Body() body: BoardUpdateRequest,
-  ): Promise<BoardResponse> {
+  ): Promise<BoardDto> {
     const board = await this.boardsService.updateBoard(id, {
       name: body.name,
       description: body.description,
@@ -90,6 +95,7 @@ export class BoardsController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete board' })
   async delete(@Param('id') id: string): Promise<{ deleted: boolean }> {
     const deleted = await this.boardsService.deleteBoard(id);
     if (!deleted) {

@@ -8,7 +8,20 @@ import { PrismaService } from '../../../prisma/prisma.service';
 export interface AgendaItemEnriched {
   id: string;
   agendaId: string;
-  taskId: string;
+  taskId: string | null;
+  routineTaskId?: string | null;
+  routineTask?: {
+    id: string;
+    name: string;
+    target: string;
+    routineId: string;
+    routine: {
+      id: string;
+      name: string;
+      type: string;
+      target: string;
+    };
+  } | null;
   type: string;
   status: string;
   startAt: Date | null;
@@ -19,7 +32,7 @@ export interface AgendaItemEnriched {
   notificationId: string | null;
   createdAt: Date;
   updatedAt: Date;
-  task: {
+  task?: {
     id: string;
     title: string;
     description: string | null;
@@ -30,7 +43,7 @@ export interface AgendaItemEnriched {
         projectId: string;
       };
     };
-  };
+  } | null;
 }
 
 export interface AgendaEnriched {
@@ -62,6 +75,11 @@ export class AgendaGetEnrichedByDateUseCase {
                     board: true,
                   },
                 },
+              },
+            },
+            routineTask: {
+              include: {
+                routine: true,
               },
             },
           },

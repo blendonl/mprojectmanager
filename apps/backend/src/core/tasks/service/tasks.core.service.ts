@@ -6,6 +6,7 @@ import { TaskDeleteUseCase } from '../usecase/task.delete.usecase';
 import { TaskGetAllUseCase } from '../usecase/task.get-all.usecase';
 import { TaskGetOneUseCase } from '../usecase/task.get-one.usecase';
 import { TaskUpdateUseCase } from '../usecase/task.update.usecase';
+import { TaskMoveUseCase } from '../usecase/task.move.usecase';
 
 @Injectable()
 export class TasksCoreService {
@@ -15,6 +16,7 @@ export class TasksCoreService {
     private readonly taskGetOneUseCase: TaskGetOneUseCase,
     private readonly taskUpdateUseCase: TaskUpdateUseCase,
     private readonly taskDeleteUseCase: TaskDeleteUseCase,
+    private readonly taskMoveUseCase: TaskMoveUseCase,
   ) {}
 
   async createTask(columnId: string, data: TaskCreateData) {
@@ -35,5 +37,9 @@ export class TasksCoreService {
 
   async deleteTask(taskId: string) {
     return this.taskDeleteUseCase.execute(taskId);
+  }
+
+  async moveTask(taskId: string, targetColumnId: string) {
+    return this.taskMoveUseCase.execute(taskId, targetColumnId);
   }
 }

@@ -24,8 +24,8 @@ export class AgendaItemCompleteUseCase {
       throw new Error('AgendaItem not found');
     }
 
-    const task = await this.prisma.task.findUnique({
-      where: { id: item.taskId },
+    const task = item.taskId ? await this.prisma.task.findUnique({
+      where: { id: item.taskId ?? undefined },
       include: {
         column: {
           include: {
@@ -37,13 +37,13 @@ export class AgendaItemCompleteUseCase {
           },
         },
       },
-    });
+    }) : null;
 
     if (!task) {
       throw new Error('Task not found');
     }
 
-    const doneColumn = task.column.board.columns.find((col) =>
+    const doneColumn = task.column?.board.columns.find((col) =>
       col.name.toLowerCase().includes('done'),
     );
 

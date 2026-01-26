@@ -34,6 +34,11 @@ export class AgendaItemGetUpcomingUseCase {
             },
           },
         },
+        routineTask: {
+          include: {
+            routine: true,
+          },
+        },
       },
       orderBy: {
         agenda: {

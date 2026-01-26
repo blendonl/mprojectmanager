@@ -19,6 +19,11 @@ export class AgendaItemGetOrphanedUseCase {
             },
           },
         },
+        routineTask: {
+          include: {
+            routine: true,
+          },
+        },
       },
     });
 

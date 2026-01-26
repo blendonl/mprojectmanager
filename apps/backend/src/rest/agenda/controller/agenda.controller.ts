@@ -9,19 +9,21 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AgendaDto, AgendaEnrichedDto } from 'shared-types';
 import { AgendaCoreService } from 'src/core/agenda/service/agenda.core.service';
 import { AgendaCreateRequest } from '../dto/agenda.create.request';
 import { AgendaUpdateRequest } from '../dto/agenda.update.request';
-import { AgendaResponse } from '../dto/agenda.response';
 import { AgendaMapper } from '../agenda.mapper';
-import { AgendaEnrichedResponse } from '../dto/agenda-enriched.response';
 
+@ApiTags('agendas')
 @Controller('agendas')
 export class AgendaController {
   constructor(private readonly agendaService: AgendaCoreService) {}
 
   @Post()
-  async create(@Body() body: AgendaCreateRequest): Promise<AgendaResponse> {
+  @ApiOperation({ summary: 'Create agenda' })
+  async create(@Body() body: AgendaCreateRequest): Promise<AgendaDto> {
     const agenda = await this.agendaService.createAgenda({
       date: new Date(body.date),
     });
@@ -29,14 +31,20 @@ export class AgendaController {
   }
 
   @Get()
-  async list(): Promise<AgendaResponse[]> {
+  @ApiOperation({ summary: 'List all agendas' })
+  async list(): Promise<AgendaDto[]> {
     const agendas = await this.agendaService.getAgendas();
+
     return agendas.map(AgendaMapper.toAgendaResponse);
   }
 
   @Get('by-date')
-  async getByDate(@Query('date') date: string): Promise<AgendaResponse | null> {
+  @ApiOperation({ summary: 'Get agenda by date' })
+  async getByDate(@Query('date') date: string): Promise<AgendaDto | null> {
     const agenda = await this.agendaService.getAgendaByDate(new Date(date));
+
+    console.log(agenda);
+
     if (!agenda) {
       return null;
     }
@@ -44,10 +52,13 @@ export class AgendaController {
   }
 
   @Get('by-date/enriched')
+  @ApiOperation({ summary: 'Get enriched agenda by date' })
   async getEnrichedByDate(
     @Query('date') date: string,
-  ): Promise<AgendaEnrichedResponse | null> {
-    const agenda = await this.agendaService.getEnrichedAgendaByDate(new Date(date));
+  ): Promise<AgendaEnrichedDto | null> {
+    const agenda = await this.agendaService.getEnrichedAgendaByDate(
+      new Date(date),
+    );
     if (!agenda) {
       return null;
     }
@@ -55,19 +66,23 @@ export class AgendaController {
   }
 
   @Get('date-range')
+  @ApiOperation({ summary: 'Get agendas for date range' })
   async getDateRange(
     @Query('start') start: string,
     @Query('end') end: string,
-  ): Promise<AgendaEnrichedResponse[]> {
+  ): Promise<AgendaEnrichedDto[]> {
     const agendas = await this.agendaService.getAgendasForDateRange(
       new Date(start),
       new Date(end),
     );
+
+    console.dir(agendas, { depth: null });
     return agendas.map(AgendaMapper.toAgendaEnrichedResponse);
   }
 
   @Get(':agendaId')
-  async getOne(@Param('agendaId') agendaId: string): Promise<AgendaResponse> {
+  @ApiOperation({ summary: 'Get agenda by ID' })
+  async getOne(@Param('agendaId') agendaId: string): Promise<AgendaDto> {
     const agenda = await this.agendaService.getAgenda(agendaId);
     if (!agenda) {
       throw new NotFoundException('Agenda not found');
@@ -76,10 +91,11 @@ export class AgendaController {
   }
 
   @Put(':agendaId')
+  @ApiOperation({ summary: 'Update agenda' })
   async update(
     @Param('agendaId') agendaId: string,
     @Body() body: AgendaUpdateRequest,
-  ): Promise<AgendaResponse> {
+  ): Promise<AgendaDto> {
     const agenda = await this.agendaService.updateAgenda(agendaId, {
       date: body.date ? new Date(body.date) : undefined,
     });
@@ -87,7 +103,9 @@ export class AgendaController {
   }
 
   @Delete(':agendaId')
-  async delete(@Param('agendaId') agendaId: string): Promise<{ deleted: boolean }> {
+  async delete(
+    @Param('agendaId') agendaId: string,
+  ): Promise<{ deleted: boolean }> {
     await this.agendaService.deleteAgenda(agendaId);
     return { deleted: true };
   }

@@ -1,14 +1,14 @@
 import { AgendaItem } from '@prisma/client';
-import { AgendaItemResponse } from './dto/agenda-item.response';
+import { AgendaItemDto } from 'shared-types';
 
 export class AgendaItemMapper {
-  static toResponse(item: AgendaItem): AgendaItemResponse {
+  static toResponse(item: AgendaItem): AgendaItemDto {
     return {
       id: item.id,
       agendaId: item.agendaId,
-      taskId: item.taskId,
-      type: item.type,
-      status: item.status,
+      taskId: item.taskId ?? null,
+      routineTaskId: item.routineTaskId ?? null,
+      status: item.status as any,
       startAt: item.startAt?.toISOString() ?? null,
       duration: item.duration,
       position: item.position,

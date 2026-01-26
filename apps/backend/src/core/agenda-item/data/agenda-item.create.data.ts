@@ -1,7 +1,8 @@
 import { AgendaItemStatus, AgendaItemType } from '@prisma/client';
 
 export interface AgendaItemCreateData {
-  taskId: string;
+  taskId?: string | null;
+  routineTaskId?: string | null;
   type?: AgendaItemType;
   status?: AgendaItemStatus;
   startAt?: Date | null;

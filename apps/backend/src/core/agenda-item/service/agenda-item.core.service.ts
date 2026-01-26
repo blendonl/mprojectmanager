@@ -12,6 +12,7 @@ import { AgendaItemGetUpcomingUseCase } from '../usecase/agenda-item.get-upcomin
 import { AgendaItemGetUnfinishedUseCase } from '../usecase/agenda-item.get-unfinished.usecase';
 import { AgendaItemCompleteUseCase } from '../usecase/agenda-item.complete.usecase';
 import { AgendaItemRescheduleUseCase } from '../usecase/agenda-item.reschedule.usecase';
+import { AgendaItemMarkUnfinishedUseCase } from '../usecase/agenda-item.mark-unfinished.usecase';
 
 @Injectable()
 export class AgendaItemCoreService {
@@ -27,6 +28,7 @@ export class AgendaItemCoreService {
     private readonly agendaItemGetUnfinishedUseCase: AgendaItemGetUnfinishedUseCase,
     private readonly agendaItemCompleteUseCase: AgendaItemCompleteUseCase,
     private readonly agendaItemRescheduleUseCase: AgendaItemRescheduleUseCase,
+    private readonly agendaItemMarkUnfinishedUseCase: AgendaItemMarkUnfinishedUseCase,
   ) {}
 
   async createAgendaItem(agendaId: string, data: AgendaItemCreateData) {
@@ -76,5 +78,9 @@ export class AgendaItemCoreService {
     duration?: number | null,
   ) {
     return this.agendaItemRescheduleUseCase.execute(id, newDate, startAt, duration);
+  }
+
+  async markAsUnfinished(id: string) {
+    return this.agendaItemMarkUnfinishedUseCase.execute(id);
   }
 }

@@ -17,6 +17,8 @@ import { AgendaItemGetUpcomingUseCase } from './usecase/agenda-item.get-upcoming
 import { AgendaItemGetUnfinishedUseCase } from './usecase/agenda-item.get-unfinished.usecase';
 import { AgendaItemCompleteUseCase } from './usecase/agenda-item.complete.usecase';
 import { AgendaItemRescheduleUseCase } from './usecase/agenda-item.reschedule.usecase';
+import { AgendaItemMarkUnfinishedUseCase } from './usecase/agenda-item.mark-unfinished.usecase';
+import { AgendaItemMarkExpiredUnfinishedUseCase } from './usecase/agenda-item.mark-expired-unfinished.usecase';
 import { AgendaCoreModule } from '../agenda/agenda.core.module';
 
 @Module({
@@ -41,8 +43,10 @@ import { AgendaCoreModule } from '../agenda/agenda.core.module';
     AgendaItemGetUnfinishedUseCase,
     AgendaItemCompleteUseCase,
     AgendaItemRescheduleUseCase,
+    AgendaItemMarkUnfinishedUseCase,
+    AgendaItemMarkExpiredUnfinishedUseCase,
     AgendaItemCoreService,
   ],
-  exports: [AgendaItemCoreService],
+  exports: [AgendaItemCoreService, AgendaItemMarkExpiredUnfinishedUseCase],
 })
 export class AgendaItemCoreModule {}

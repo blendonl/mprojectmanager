@@ -2,9 +2,10 @@ import { AgendaItemStatus, AgendaItemType } from '@prisma/client';
 import { IsDateString, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class AgendaItemCreateRequest {
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  taskId!: string;
+  taskId?: string;
 
   @IsOptional()
   @IsEnum(AgendaItemType)
@@ -33,4 +34,8 @@ export class AgendaItemCreateRequest {
   @IsOptional()
   @IsString()
   notificationId?: string | null;
+
+  @IsOptional()
+  @IsString()
+  routineTaskId?: string | null;
 }

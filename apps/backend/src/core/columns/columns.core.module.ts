@@ -30,6 +30,6 @@ import { RepositoryEventWrapper } from '../events/services/repository-event-wrap
     ColumnDeleteUseCase,
     ColumnsCoreService,
   ],
-  exports: [ColumnsCoreService],
+  exports: [ColumnsCoreService, COLUMN_REPOSITORY],
 })
 export class ColumnsCoreModule {}

@@ -33,4 +33,8 @@ export class AgendaItemUpdateRequest {
   @IsOptional()
   @IsString()
   notificationId?: string | null;
+
+  @IsOptional()
+  @IsString()
+  routineTaskId?: string | null;
 }

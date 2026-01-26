@@ -3,7 +3,8 @@ import { AgendaItemStatus } from '@prisma/client';
 export interface AgendaItem {
   id: string;
   agendaId: string;
-  taskId: string;
+  taskId?: string | null;
+  routineTaskId?: string | null;
   status: AgendaItemStatus;
   startAt: Date | null;
   duration: number | null;

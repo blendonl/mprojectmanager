@@ -32,6 +32,11 @@ export class AgendaItemGetUnfinishedUseCase {
             },
           },
         },
+        routineTask: {
+          include: {
+            routine: true,
+          },
+        },
       },
       orderBy: {
         agenda: {

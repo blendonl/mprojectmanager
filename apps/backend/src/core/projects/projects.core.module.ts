@@ -3,6 +3,7 @@ import { PrismaProjectRepository } from './repositories/prisma-project.repositor
 import { ProjectCreateUseCase } from './usecases/project.create.usecase';
 import { ProjectGetAllUseCase } from './usecases/project.get-all.usecase';
 import { ProjectGetOneUseCase } from './usecases/project.get-one.usecase';
+import { ProjectGetOneWithDetailsUseCase } from './usecases/project.get-one-with-details.usecase';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { PROJECT_REPOSITORY } from './repositories/project.repository';
 import { ProjectsCoreService } from './service/projects.core.service';
@@ -24,6 +25,7 @@ import { RepositoryEventWrapper } from '../events/services/repository-event-wrap
     ProjectCreateUseCase,
     ProjectGetAllUseCase,
     ProjectGetOneUseCase,
+    ProjectGetOneWithDetailsUseCase,
     ProjectsCoreService,
   ],
 

@@ -27,6 +27,7 @@ export class AgendaItemPrismaRepository implements AgendaItemRepository {
       data: {
         agendaId,
         taskId: data.taskId,
+        routineTaskId: data.routineTaskId ?? undefined,
         status: data.status,
         startAt: data.startAt,
         duration: data.duration,
@@ -40,6 +41,7 @@ export class AgendaItemPrismaRepository implements AgendaItemRepository {
       where: { id },
       data: {
         taskId: data.taskId,
+        routineTaskId: data.routineTaskId ?? undefined,
         status: data.status,
         startAt: data.startAt,
         duration: data.duration,
