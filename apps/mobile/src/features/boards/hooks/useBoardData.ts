@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { Board } from '../domain/entities/Board';
-import { getBoardService } from '@/core/di/hooks';
+import { useBoardService } from '@/core/di/hooks';
 import alertService from '@/services/AlertService';
 import logger from '@/utils/logger';
 
@@ -24,7 +24,7 @@ export function useBoardData(boardId: string | undefined): UseBoardDataReturn {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const router = useRouter();
-  const boardService = getBoardService();
+  const boardService = useBoardService();
   const retryCountRef = useRef(0);
   const isMountedRef = useRef(true);
 
@@ -42,6 +42,7 @@ export function useBoardData(boardId: string | undefined): UseBoardDataReturn {
       const setLoadingState = isRefresh ? setRefreshing : setLoading;
 
       try {
+        logger.info('[useBoardData] Starting board load', { boardId, isRefresh });
         setLoadingState(true);
         setError(null);
 
@@ -50,7 +51,12 @@ export function useBoardData(boardId: string | undefined): UseBoardDataReturn {
         if (!isMountedRef.current) return;
 
         if (loadedBoard) {
+          logger.info('[useBoardData] Board loaded successfully', {
+            boardId,
+            columnsCount: loadedBoard.columns?.length
+          });
           setBoard(loadedBoard);
+          setLoading(false);
           retryCountRef.current = 0;
         } else {
           throw new Error('Board not found');
@@ -98,10 +104,9 @@ export function useBoardData(boardId: string | undefined): UseBoardDataReturn {
   }, [loadBoardWithRetry]);
 
   const refreshBoard = useCallback(async () => {
-    if (!board) return;
     retryCountRef.current = 0;
     await loadBoardWithRetry(true);
-  }, [board, loadBoardWithRetry]);
+  }, [loadBoardWithRetry]);
 
   const retryLoad = useCallback(async () => {
     retryCountRef.current = 0;

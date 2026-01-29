@@ -9,7 +9,6 @@ import { useBoardScreen } from "@/features/boards/hooks";
 import EmptyState from "@/shared/components/EmptyState";
 import BoardHeader from "./components/BoardHeader";
 import BoardColumns from "./components/BoardColumns";
-import BoardModals from "./components/BoardModals";
 import theme from "@/shared/theme";
 import uiConstants from "@/shared/theme/uiConstants";
 
@@ -18,8 +17,8 @@ export default function BoardScreen() {
   const insets = useSafeAreaInsets();
 
   const {
-    viewState,
-    modals,
+    board,
+    loading,
     columnActions,
     taskActions,
   } = useBoardScreen(boardId);
@@ -30,7 +29,7 @@ export default function BoardScreen() {
     insets.bottom +
     theme.spacing.lg;
 
-  if (viewState.loading || !viewState.board) {
+  if (loading || !board) {
     return (
       <View style={styles.container}>
         <View style={styles.centerContainer}>
@@ -40,7 +39,7 @@ export default function BoardScreen() {
     );
   }
 
-  if (!viewState.board.columns || viewState.board.columns.length === 0) {
+  if (!board.columns || board.columns.length === 0) {
     return (
       <EmptyState
         title="No Columns"
@@ -51,23 +50,16 @@ export default function BoardScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <BoardHeader description={viewState.board.description} />
+      <BoardHeader description={board.description} />
 
       <BoardColumns
-        columns={viewState.board.columns!}
+        columns={board.columns!}
         bottomPadding={bottomPadding}
         onTaskPress={taskActions.handleTaskPress}
         onTaskLongPress={taskActions.handleTaskLongPress}
         onAddTask={taskActions.handleAddItem}
         onColumnMenu={columnActions.handleColumnMenu}
         onCreateColumn={columnActions.handleCreateColumn}
-      />
-
-      <BoardModals
-        columns={viewState.board.columns!}
-        modals={modals}
-        columnActions={columnActions}
-        taskActions={taskActions}
       />
     </SafeAreaView>
   );
