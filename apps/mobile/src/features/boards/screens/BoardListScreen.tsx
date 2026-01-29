@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Screen } from "@shared/components/Screen";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { Board } from "@features/boards/domain/entities/Board";
+import { Board } from "@features/boards";
 import { getBoardService } from "@core/di/hooks";
 import { useCurrentProject } from "@core/ProjectContext";
 import EmptyState from "@shared/components/EmptyState";

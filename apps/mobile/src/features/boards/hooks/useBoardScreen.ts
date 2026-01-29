@@ -1,82 +1,101 @@
+import { useMemo } from 'react';
 import { useBoardData } from './useBoardData';
-import { useBoardModals } from './useBoardModals';
+import { useBoardActions } from './useBoardActions';
+import { useBoardViewState } from './useBoardViewState';
 import { useBoardNavigation } from './useBoardNavigation';
-import { useColumnActions } from './useColumnActions';
-import { useTaskActions } from './useTaskActions';
+import { useColumnActions } from '@features/columns/hooks/useColumnActions';
+import { useTaskActions } from '@features/tasks/hooks/useTaskActions';
+import { useAutoRefresh } from '@shared/hooks/useAutoRefresh';
 
-export function useBoardScreen(boardId: string | undefined) {
-  // Sub-hooks
-  const data = useBoardData(boardId);
-  const modals = useBoardModals();
+interface UseBoardScreenReturn {
+  board: ReturnType<typeof useBoardData>['board'];
+  loading: boolean;
+  refreshing: boolean;
+  error: ReturnType<typeof useBoardData>['error'];
+  isAutoRefreshing: boolean;
+  boardActions: ReturnType<typeof useBoardActions>;
+  columnActions: ReturnType<typeof useColumnActions>;
+  taskActions: ReturnType<typeof useTaskActions>;
+  viewState: ReturnType<typeof useBoardViewState>;
+  refreshBoard: () => Promise<void>;
+  retryLoad: () => Promise<void>;
+}
 
-  // Navigation effects
+export function useBoardScreen(boardId: string): UseBoardScreenReturn {
+  const {
+    board,
+    loading,
+    refreshing,
+    error,
+    refreshBoard,
+    retryLoad,
+  } = useBoardData(boardId);
+
+  const { isAutoRefreshing } = useAutoRefresh(
+    [
+      'board_updated',
+      'column_created',
+      'column_updated',
+      'column_deleted',
+      'column_reordered',
+      'column_cleared',
+      'task_created',
+      'task_updated',
+      'task_moved',
+      'task_deleted',
+      'tasks_moved_bulk',
+    ],
+    refreshBoard,
+    500
+  );
+
   useBoardNavigation({
-    board: data.board,
-    refreshBoard: data.refreshBoard,
+    board,
+    refreshBoard,
   });
 
-  // Business logic hooks
+  const boardActions = useBoardActions({
+    onDataChanged: refreshBoard,
+  });
+
   const columnActions = useColumnActions({
-    board: data.board,
-    refreshBoard: data.refreshBoard,
-    openColumnFormForCreate: modals.openColumnFormForCreate,
-    openColumnFormForEdit: modals.openColumnFormForEdit,
-    closeColumnForm: modals.closeColumnForm,
-    openMoveModal: modals.openMoveModal,
-    closeColumnActions: modals.closeColumnActions,
+    boardId,
+    onDataChanged: refreshBoard,
   });
 
   const taskActions = useTaskActions({
-    board: data.board,
-    refreshBoard: data.refreshBoard,
-    openMoveModal: modals.openMoveModal,
-    closeMoveModal: modals.closeMoveModal,
+    boardId,
+    onDataChanged: refreshBoard,
   });
 
-  // Return clean interface for component
-  return {
-    // View state
-    viewState: {
-      board: data.board,
-      loading: data.loading,
-    },
+  const viewState = useBoardViewState(boardId);
 
-    // Modals
-    modals: {
-      // Task Move Modal
-      showMoveModal: modals.showMoveModal,
-      selectedTask: modals.selectedTask,
-      closeMoveModal: modals.closeMoveModal,
-
-      // Column Form Modal
-      showColumnForm: modals.showColumnForm,
-      editingColumn: modals.editingColumn,
-      closeColumnForm: modals.closeColumnForm,
-
-      // Column Actions Modal
-      showColumnActions: modals.showColumnActions,
-      selectedColumn: modals.selectedColumn,
-      closeColumnActions: modals.closeColumnActions,
-    },
-
-    // Column actions
-    columnActions: {
-      handleCreateColumn: columnActions.handleCreateColumn,
-      handleSaveColumn: columnActions.handleSaveColumn,
-      handleColumnMenu: modals.openColumnActions,
-      handleRenameColumn: columnActions.handleRenameColumn,
-      handleMoveColumn: columnActions.handleMoveColumn,
-      handleClearColumn: columnActions.handleClearColumn,
-      handleMoveAllTasks: columnActions.handleMoveAllTasks,
-      handleDeleteColumn: columnActions.handleDeleteColumn,
-    },
-
-    // Task actions
-    taskActions: {
-      handleTaskPress: taskActions.handleTaskPress,
-      handleTaskLongPress: taskActions.handleTaskLongPress,
-      handleMoveToColumn: taskActions.handleMoveToColumn,
-      handleAddItem: taskActions.handleAddItem,
-    },
-  };
+  return useMemo(
+    () => ({
+      board,
+      loading,
+      refreshing,
+      error,
+      isAutoRefreshing,
+      boardActions,
+      columnActions,
+      taskActions,
+      viewState,
+      refreshBoard,
+      retryLoad,
+    }),
+    [
+      board,
+      loading,
+      refreshing,
+      error,
+      isAutoRefreshing,
+      boardActions,
+      columnActions,
+      taskActions,
+      viewState,
+      refreshBoard,
+      retryLoad,
+    ]
+  );
 }
