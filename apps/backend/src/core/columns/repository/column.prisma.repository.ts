@@ -24,6 +24,20 @@ export class ColumnsPrismaRepository implements ColumnRepository {
       where: { id },
     });
   }
+
+  async findByIdWithProject(id: string) {
+    return this.prisma.column.findUnique({
+      where: { id },
+      include: {
+        board: {
+          select: {
+            id: true,
+            projectId: true,
+          },
+        },
+      },
+    });
+  }
   findByBoardId(boardId: string): Promise<Column[]> {
     return this.prisma.column.findMany({
       where: { boardId },
