@@ -2,7 +2,8 @@ import { BoardId, ProjectId, Timestamp } from "@core/types";
 import { Column } from "@features/columns/domain/entities/Column";
 import { Task } from "@features/tasks/domain/entities/Task";
 import { now } from "@utils/dateUtils";
-import { BoardDetailDto } from "@mprojectmanager/shared-types";
+import { BoardDetailDto } from "shared-types";
+import logger from "@utils/logger";
 
 export interface BoardProps {
   id?: BoardId;
@@ -105,7 +106,13 @@ export class Board {
   }
 
   static fromDto(dto: BoardDetailDto & { columns?: any[] }): Board {
-    return new Board({
+    logger.info('[Board.fromDto] Parsing board DTO', {
+      boardId: dto.id,
+      columnsCount: dto.columns?.length
+    });
+
+    const startTime = Date.now();
+    const board = new Board({
       id: dto.id,
       name: dto.name,
       projectId: dto.projectId,
@@ -134,6 +141,15 @@ export class Board {
       createdAt: dto.createdAt ? new Date(dto.createdAt) : undefined,
       updatedAt: dto.updatedAt ? new Date(dto.updatedAt) : undefined,
     });
+
+    const duration = Date.now() - startTime;
+    logger.info('[Board.fromDto] Board parsed successfully', {
+      boardId: dto.id,
+      duration: `${duration}ms`,
+      columnsCount: board.columns.length
+    });
+
+    return board;
   }
 
   static fromDict(data: Record<string, any>): Board {

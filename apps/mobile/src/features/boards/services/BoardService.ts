@@ -6,6 +6,7 @@ import { BoardNotFoundError, ValidationError } from "@core/exceptions";
 import { getEventBus } from "@core/EventBus";
 import { ColumnService } from "@features/columns/services/ColumnService";
 import { Column } from "@features/columns/domain/entities/Column";
+import logger from "@utils/logger";
 
 import { BOARD_REPOSITORY, COLUMN_SERVICE } from "@core/di/tokens";
 
@@ -31,11 +32,19 @@ export class BoardService {
   }
 
   async getBoardById(boardId: BoardId): Promise<Board> {
+    logger.info('[BoardService] getBoardById called', { boardId });
     const board = await this.repository.loadBoardById(boardId);
 
     if (!board) {
+      logger.warn('[BoardService] Board not found', { boardId });
       throw new BoardNotFoundError(`Board with id '${boardId}' not found`);
     }
+
+    logger.info('[BoardService] Board retrieved from repository', {
+      boardId,
+      boardName: board.name,
+      columnsCount: board.columns?.length
+    });
 
     await getEventBus().publish("board_loaded", {
       boardId: board.id,

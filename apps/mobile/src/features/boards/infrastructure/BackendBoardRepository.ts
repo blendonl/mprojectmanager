@@ -5,6 +5,7 @@ import { BackendApiClient } from "@infrastructure/api/BackendApiClient";
 import { BACKEND_API_CLIENT } from "@core/di/tokens";
 import { BoardId, ProjectId } from "@core/types";
 import { BoardDto } from "shared-types";
+import logger from "@utils/logger";
 
 @injectable()
 export class BackendBoardRepository implements BoardRepository {
@@ -27,7 +28,13 @@ export class BackendBoardRepository implements BoardRepository {
   }
 
   async loadBoardById(boardId: BoardId): Promise<Board | null> {
+    logger.info('[BackendBoardRepository] Fetching board from API', { boardId });
     const dto = await this.apiClient.requestOrNull<any>(`/boards/${boardId}`);
+    logger.info('[BackendBoardRepository] API response received', {
+      boardId,
+      hasData: !!dto,
+      columnsCount: dto?.columns?.length
+    });
     return dto ? Board.fromDto(dto) : null;
   }
 
