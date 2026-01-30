@@ -1,10 +1,13 @@
+import { injectable, inject } from 'tsyringe';
 import { Note, NoteType, EntityType } from '../domain/entities/Note';
 import { NoteRepository, NoteFilter } from '../domain/repositories/NoteRepository';
 import { NoteId, ProjectId, TaskId, BoardId } from '@core/types';
 import { ValidationError } from '@core/exceptions';
+import { NOTE_REPOSITORY } from '@core/di/tokens';
 
+@injectable()
 export class NoteService {
-  constructor(private repository: NoteRepository) {}
+  constructor(@inject(NOTE_REPOSITORY) private repository: NoteRepository) {}
 
   async getAllNotes(): Promise<Note[]> {
     return this.repository.loadAllNotes();

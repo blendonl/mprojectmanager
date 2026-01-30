@@ -1,10 +1,13 @@
+import { injectable, inject } from "tsyringe";
 import { Goal } from "../domain/entities/Goal";
 import { GoalRepository } from "../domain/repositories/GoalRepository";
 import { GoalId } from "@core/types";
 import { ValidationError } from "@core/exceptions";
+import { GOAL_REPOSITORY } from "@core/di/tokens";
 
+@injectable()
 export class GoalService {
-  constructor(private repository: GoalRepository) {}
+  constructor(@inject(GOAL_REPOSITORY) private repository: GoalRepository) {}
 
   async getAllGoals(): Promise<Goal[]> {
     return await this.repository.loadAllGoals();

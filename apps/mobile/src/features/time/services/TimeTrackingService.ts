@@ -1,9 +1,12 @@
+import { injectable, inject } from 'tsyringe';
 import { TimeLog, WeeklySummary, MonthlySummary } from '../domain/entities/TimeLog';
 import { TimeLogRepository } from '../domain/repositories/TimeLogRepository';
 import { ProjectId } from '@core/types';
+import { TIME_LOG_REPOSITORY } from '@core/di/tokens';
 
+@injectable()
 export class TimeTrackingService {
-  constructor(private repository: TimeLogRepository) {}
+  constructor(@inject(TIME_LOG_REPOSITORY) private repository: TimeLogRepository) {}
 
   async getAllTimeLogs(): Promise<TimeLog[]> {
     return this.repository.loadAllTimeLogs();

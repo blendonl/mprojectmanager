@@ -1,7 +1,9 @@
+import { injectable, inject } from "tsyringe";
 import { Routine, RoutineId, RoutineProps, RoutineType } from "../domain/entities/Routine";
 import { RoutineRepository } from "../domain/repositories/RoutineRepository";
 import { validateRoutineTarget } from "../domain/utils/routineValidation";
 import { getEventBus } from "@core/EventBus";
+import { ROUTINE_REPOSITORY } from "@core/di/tokens";
 
 export class RoutineNotFoundError extends Error {
   constructor(message: string) {
@@ -10,8 +12,9 @@ export class RoutineNotFoundError extends Error {
   }
 }
 
+@injectable()
 export class RoutineService {
-  constructor(private readonly repository: RoutineRepository) {}
+  constructor(@inject(ROUTINE_REPOSITORY) private readonly repository: RoutineRepository) {}
 
   private validateRoutineName(name: string): void {
     if (!name || name.trim().length === 0) {
