@@ -3,20 +3,16 @@
  * Centralized logic for issue types and their icons
  */
 
-import { IssueType } from '../core/enums';
-import { AppIconName } from '../ui/components/icons/AppIcon';
+import { AppIconName } from "@/shared";
+import { TaskType } from "shared-types";
 
 /**
  * Mapping of issue types to their icon names
  */
-export const ISSUE_TYPE_ICONS: Record<string, AppIconName> = {
-  [IssueType.EPIC]: 'epic',
-  [IssueType.STORY]: 'story',
-  [IssueType.BUG]: 'bug',
-  [IssueType.SUBTASK]: 'subtask',
-  [IssueType.TASK]: 'task',
-  // Fallback for unknown types
-  default: 'file',
+export const ISSUE_TYPE_ICONS: Record<TaskType, AppIconName> = {
+  [TaskType.TASK]: "task",
+  [TaskType.SUBTASK]: "subtask",
+  [TaskType.MEETING]: "task",
 } as const;
 
 /**
@@ -27,7 +23,7 @@ export const ISSUE_TYPE_ICONS: Record<string, AppIconName> = {
  */
 export function getIssueTypeIcon(issueType: string): AppIconName {
   if (!issueType) {
-    return ISSUE_TYPE_ICONS.default;
+    return ISSUE_TYPE_ICONS[TaskType.TASK];
   }
 
   const normalizedType = issueType.toLowerCase();
@@ -40,33 +36,23 @@ export function getIssueTypeIcon(issueType: string): AppIconName {
   }
 
   // Check for partial matches
-  if (normalizedType.includes('epic')) {
-    return ISSUE_TYPE_ICONS[IssueType.EPIC];
-  } else if (normalizedType.includes('story')) {
-    return ISSUE_TYPE_ICONS[IssueType.STORY];
-  } else if (normalizedType.includes('bug')) {
-    return ISSUE_TYPE_ICONS[IssueType.BUG];
-  } else if (normalizedType.includes('subtask')) {
-    return ISSUE_TYPE_ICONS[IssueType.SUBTASK];
-  } else if (normalizedType.includes('task')) {
-    return ISSUE_TYPE_ICONS[IssueType.TASK];
+  if (normalizedType.includes("epic")) {
+    return ISSUE_TYPE_ICONS[TaskType.TASK];
+  } else if (normalizedType.includes("story")) {
+    return ISSUE_TYPE_ICONS[TaskType.SUBTASK];
+  } else if (normalizedType.includes("bug") || normalizedType.includes("meeting")) {
+    return ISSUE_TYPE_ICONS[TaskType.MEETING];
   }
 
-  return ISSUE_TYPE_ICONS.default;
+  return ISSUE_TYPE_ICONS[TaskType.TASK];
 }
 
 /**
  * Get all available issue types
  * @returns Array of all issue type values
  */
-export function getAllIssueTypes(): string[] {
-  return [
-    IssueType.TASK,
-    IssueType.STORY,
-    IssueType.BUG,
-    IssueType.EPIC,
-    IssueType.SUBTASK,
-  ];
+export function getAllIssueTypes(): TaskType[] {
+  return [TaskType.TASK, TaskType.SUBTASK, TaskType.MEETING];
 }
 
 /**
@@ -74,7 +60,7 @@ export function getAllIssueTypes(): string[] {
  * @param issueType - The string to check
  * @returns True if the string is a valid issue type
  */
-export function isValidIssueType(issueType: string): boolean {
+export function isValidIssueType(issueType: TaskType): boolean {
   return getAllIssueTypes().includes(issueType);
 }
 

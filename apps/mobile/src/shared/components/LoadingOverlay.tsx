@@ -19,7 +19,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
     <Modal transparent animationType="fade" visible={visible}>
       <View style={[styles.overlay, transparent && styles.overlayTransparent]}>
         <View style={styles.container}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <ActivityIndicator size="large" color={theme.accent.primary} />
           {message && <Text style={styles.message}>{message}</Text>}
         </View>
       </View>
@@ -38,8 +38,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   container: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
+    backgroundColor: theme.background.elevated,
+    borderRadius: theme.radius.lg,
     padding: theme.spacing.xl,
     alignItems: 'center',
     minWidth: 120,
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.md,
     fontSize: 14,
     fontWeight: '500',
-    color: theme.colors.text,
+    color: theme.text.primary,
     textAlign: 'center',
   },
 });

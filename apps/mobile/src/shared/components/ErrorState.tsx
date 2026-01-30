@@ -58,7 +58,7 @@ const ErrorState: React.FC<ErrorStateProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
-        <AppIcon name={config.icon} size={64} color={theme.colors.error} />
+        <AppIcon name={config.icon} size={64} color={theme.accent.error} />
       </View>
 
       <Text style={styles.title}>{displayTitle}</Text>
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: theme.spacing.xl,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.background.primary,
   },
   iconContainer: {
     marginBottom: theme.spacing.lg,
@@ -96,13 +96,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '600',
-    color: theme.colors.text,
+    color: theme.text.primary,
     textAlign: 'center',
     marginBottom: theme.spacing.sm,
   },
   message: {
     fontSize: 14,
-    color: theme.colors.textSecondary,
+    color: theme.text.secondary,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: theme.spacing.lg,
@@ -113,19 +113,19 @@ const styles = StyleSheet.create({
   debugContainer: {
     marginTop: theme.spacing.xl,
     padding: theme.spacing.md,
-    backgroundColor: theme.colors.surfaceVariant,
-    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.background.elevatedHigh,
+    borderRadius: theme.radius.md,
     maxWidth: '100%',
   },
   debugTitle: {
     fontSize: 12,
     fontWeight: '600',
-    color: theme.colors.error,
+    color: theme.accent.error,
     marginBottom: theme.spacing.xs,
   },
   debugText: {
     fontSize: 11,
-    color: theme.colors.textSecondary,
+    color: theme.text.secondary,
     fontFamily: 'monospace',
   },
 });

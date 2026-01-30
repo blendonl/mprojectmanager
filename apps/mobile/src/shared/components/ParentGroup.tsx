@@ -1,23 +1,25 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Task } from '@domain/entities/Task';
-import { Parent } from '@domain/entities/Parent';
-import TaskCard from '@features/boards/components/ItemCard';
-import ParentBadge from './ParentBadge';
-import theme from '@shared/theme';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { Parent } from "@domain/entities/Parent";
+import { Task } from "@features/tasks/domain/entities/Task";
+import theme from "@shared/theme";
+import { DraggableTaskCard } from "@features/boards/components/drag-drop";
+import ParentBadge from "./ParentBadge";
 
 interface ParentGroupProps {
   parent: Parent | null;
   tasks: Task[];
   onTaskPress: (task: Task) => void;
-  onTaskLongPress?: (task: Task) => void;
+  onDragStart?: (task: Task) => void;
+  onDragEnd?: (taskId: string, targetColumnId: string | null) => void;
 }
 
 export default function ParentGroup({
   parent,
   tasks,
   onTaskPress,
-  onTaskLongPress,
+  onDragStart,
+  onDragEnd,
 }: ParentGroupProps) {
   if (tasks.length === 0) {
     return null;
@@ -35,12 +37,13 @@ export default function ParentGroup({
       </View>
       <View style={styles.tasks}>
         {tasks.map((task) => (
-          <TaskCard
+          <DraggableTaskCard
             key={task.id}
             task={task}
-            parent={parent}
+            parent={parent || undefined}
             onPress={() => onTaskPress(task)}
-            onLongPress={onTaskLongPress ? () => onTaskLongPress(task) : undefined}
+            onDragStart={onDragStart}
+            onDragEnd={onDragEnd}
           />
         ))}
       </View>
@@ -53,9 +56,9 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: theme.spacing.sm,
     paddingBottom: theme.spacing.xs,
     borderBottomWidth: 1,
@@ -65,7 +68,7 @@ const styles = StyleSheet.create({
     ...theme.typography.textStyles.body,
     fontWeight: theme.typography.fontWeights.semibold,
     color: theme.text.secondary,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
   count: {
     ...theme.typography.textStyles.bodySmall,
