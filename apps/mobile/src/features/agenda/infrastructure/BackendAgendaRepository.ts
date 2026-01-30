@@ -292,6 +292,47 @@ export class BackendAgendaRepository implements AgendaRepository {
     }
   }
 
+  async createAgendaItem(request: any): Promise<AgendaItem> {
+    try {
+      const response = await fetch(
+        `${this.agendaBaseUrl}/${request.agendaId}/items`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            taskId: request.taskId,
+            type: request.type,
+            status: request.status,
+            startAt: request.startAt,
+            duration: request.duration,
+            position: request.position,
+            notes: request.notes,
+            notificationId: request.notificationId,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw await this.buildResponseError(
+          response,
+          "Failed to create agenda item",
+        );
+      }
+
+      const data = await this.parseJson<AgendaItemEnrichedDto>(response);
+      if (!data) {
+        throw new Error("No data returned from create agenda item");
+      }
+
+      return this.mapEnrichedItemToAgendaItem(data);
+    } catch (error) {
+      logger.error("Failed to create agenda item:", error);
+      throw error;
+    }
+  }
+
   async saveAgendaItem(item: AgendaItem): Promise<void> {
     try {
       const method =

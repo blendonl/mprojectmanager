@@ -32,14 +32,15 @@ export interface DayAgenda {
 }
 
 export interface CreateAgendaItemRequest {
-  projectId: ProjectId;
-  boardId: BoardId;
+  agendaId: string;
   taskId: TaskId;
-  date: string;
-  time?: string;
-  durationMinutes?: number;
-  taskType?: AgendaTaskType;
-  meetingData?: MeetingData;
+  type: AgendaTaskType;
+  status: string;
+  startAt: string | null;
+  duration?: number | null;
+  position: number;
+  notes: string | null;
+  notificationId: string | null;
 }
 
 export interface UpdateAgendaItemRequest {

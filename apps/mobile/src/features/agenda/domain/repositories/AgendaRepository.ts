@@ -1,5 +1,5 @@
 import { AgendaItem } from "../entities/AgendaItem";
-import { DayAgenda, ScheduledAgendaItem } from "../interfaces/AgendaService.interface";
+import { DayAgenda, ScheduledAgendaItem, CreateAgendaItemRequest } from "../interfaces/AgendaService.interface";
 
 export interface AgendaRepository {
   loadAgendaItemsForDate(date: string): Promise<DayAgenda | null>;
@@ -13,6 +13,8 @@ export interface AgendaRepository {
   loadAgendaItemById(agendaItemId: string): Promise<AgendaItem | null>;
 
   loadAllAgendaItems(): Promise<AgendaItem[]>;
+
+  createAgendaItem(request: CreateAgendaItemRequest): Promise<AgendaItem>;
 
   saveAgendaItem(item: AgendaItem): Promise<void>;
 

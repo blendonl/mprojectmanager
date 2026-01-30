@@ -5,7 +5,7 @@ export type AgendaItemStatus =
   | "COMPLETED"
   | "CANCELLED"
   | "UNFINISHED";
-export type AgendaItemType = "TASK" | "MEETING" | "MILESTONE";
+export type AgendaItemType = "TASK" | "MEETING" | "SUBTASK";
 
 export interface AgendaItemProps {
   id?: string;

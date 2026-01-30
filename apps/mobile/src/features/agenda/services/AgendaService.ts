@@ -1,9 +1,11 @@
+import { injectable, inject, container } from "tsyringe";
 import { AgendaItem } from "../domain/entities/AgendaItem";
 import { Task } from "@features/tasks";
 import { AgendaRepository } from "../domain/repositories/AgendaRepository";
 import { NotificationService } from "@services/NotificationService";
 import { logger } from "@utils/logger";
 import { BoardId, TaskId, ProjectId } from "@core/types";
+import { TaskService } from "@features/tasks/services/TaskService";
 import {
   ScheduledAgendaItem,
   ScheduledTask,
@@ -17,40 +19,22 @@ import {
   UpdateActualValueRequest,
   AgendaFilterOptions,
 } from "../domain/interfaces/AgendaService.interface";
+import { AGENDA_REPOSITORY, NOTIFICATION_SERVICE } from "@core/di/tokens";
 
+@injectable()
 export class AgendaService {
   constructor(
-    private agendaRepository: AgendaRepository,
-    private notificationService: NotificationService,
+    @inject(AGENDA_REPOSITORY) private agendaRepository: AgendaRepository,
+    @inject(NOTIFICATION_SERVICE) private notificationService: NotificationService,
   ) {}
 
   async createAgendaItem(
     request: CreateAgendaItemRequest,
   ): Promise<AgendaItem> {
-    const {
-      projectId,
-      boardId,
-      taskId,
-      date,
-      time,
-      durationMinutes,
-      taskType,
-      meetingData,
-    } = request;
-
-    const agendaItem = new AgendaItem({
-      project_id: projectId,
-      board_id: boardId,
-      task_id: taskId,
-      scheduled_date: date,
-      scheduled_time: time,
-      duration_minutes: durationMinutes,
-      task_type: taskType,
-      meeting_data: meetingData,
-    });
-
-    await this.agendaRepository.saveAgendaItem(agendaItem);
-    await this.maybeScheduleNotification(agendaItem, taskId);
+    const agendaItem = await this.agendaRepository.createAgendaItem(request);
+    if (agendaItem.task_id && agendaItem.scheduled_time) {
+      await this.maybeScheduleNotification(agendaItem, agendaItem.task_id);
+    }
     return agendaItem;
   }
 
@@ -398,13 +382,9 @@ export class AgendaService {
     await this.agendaRepository.saveAgendaItem(item);
   }
 
-  async getAllSchedulableTasks(
-    projectId?: ProjectId,
-    goalId?: string,
-  ): Promise<ScheduledTask[]> {
-    throw new Error(
-      "getAllSchedulableTasks: This method needs to be refactored to use backend endpoints.",
-    );
+  async getAllSchedulableTasks(search?: string): Promise<Task[]> {
+    const taskService = container.resolve(TaskService);
+    return await taskService.getAllTasks({ search });
   }
 
   private getMonday(date: Date): Date {
