@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Board } from '../domain/board';
 import {
   BOARD_REPOSITORY,
   type BoardRepository,
 } from '../repositories/board.repository';
+import { BoardFindOneReturnType } from '../data/board.find-one.return.type';
 
 @Injectable()
 export class BoardGetOneUseCase {
@@ -12,7 +12,7 @@ export class BoardGetOneUseCase {
     private readonly boardRepository: BoardRepository,
   ) {}
 
-  async execute(id: string): Promise<Board | null> {
+  async execute(id: string): Promise<BoardFindOneReturnType | null> {
     return this.boardRepository.findById(id);
   }
 }

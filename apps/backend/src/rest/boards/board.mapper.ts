@@ -1,7 +1,7 @@
-import { Board, Column } from '@prisma/client';
+import { Board } from '@prisma/client';
 import { BoardDetailDto, BoardDto } from 'shared-types';
-
-type BoardWithColumns = Board & { columns?: Column[] };
+import { BoardFindOneReturnType } from 'src/core/boards/data/board.find-one.return.type';
+import { TaskMapper } from '../task/task.mapper';
 
 export class BoardMapper {
   static mapToResponse(board: Board): BoardDto {
@@ -18,14 +18,17 @@ export class BoardMapper {
     };
   }
 
-  static mapToDetailResponse(board: BoardWithColumns): BoardDetailDto {
+  static mapToDetailResponse(board: BoardFindOneReturnType): BoardDetailDto {
     return {
       ...this.mapToResponse(board),
       columns: (board.columns || []).map((column) => ({
         id: column.id,
         name: column.name,
         position: column.position,
-        taskCount: 0,
+        color: column.color,
+        wipLimit: column.limit,
+        tasks: (column.tasks || []).map((task) => TaskMapper.toResponse(task)),
+        taskCount: column.tasks?.length || 0,
       })),
       projectName: '',
     };

@@ -9,6 +9,7 @@ import {
 import { BoardUpdateData } from '../data/board.update.data';
 import { Board } from '../domain/board';
 import { BoardRepository } from './board.repository';
+import { BoardFindOneReturnType } from '../data/board.find-one.return.type';
 
 @Injectable()
 export class PrismaBoardRepository implements BoardRepository {
@@ -64,12 +65,17 @@ export class PrismaBoardRepository implements BoardRepository {
     return { items, total };
   }
 
-  async findById(id: string): Promise<Board | null> {
+  async findById(id: string): Promise<BoardFindOneReturnType | null> {
     return this.prisma.board.findUnique({
       where: { id },
       include: {
         columns: {
           orderBy: { position: 'asc' },
+          include: {
+            tasks: {
+              orderBy: { position: 'asc' },
+            },
+          },
         },
       },
     });
