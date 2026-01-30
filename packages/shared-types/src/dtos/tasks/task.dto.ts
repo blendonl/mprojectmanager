@@ -8,6 +8,7 @@ import { EntityTimestamps } from '../../types/common.types';
  */
 export interface TaskDto extends EntityTimestamps {
   id: string;
+  slug: string;
   title: string;
   description: string | null;
   taskType: TaskType;
