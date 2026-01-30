@@ -18,6 +18,7 @@ module.exports = function (api) {
             '@domain': './src/domain',
             '@infrastructure': './src/infrastructure',
             '@services': './src/services',
+            'shared-types': '../../packages/shared-types/src',
           },
         },
       ],

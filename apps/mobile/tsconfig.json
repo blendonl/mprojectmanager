@@ -29,6 +29,9 @@
       ],
       "@utils/*": [
         "src/utils/*"
+      ],
+      "shared-types": [
+        "../../packages/shared-types/src"
       ]
     }
   },
