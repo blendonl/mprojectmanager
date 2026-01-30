@@ -16,9 +16,11 @@ enum TaskPriority {
 }
 
 model Task {
-  id       String  @id @default(uuid())
-  columnId String  @map("column_id")
-  parentId String? @map("parent_id")
+  id         String  @id @default(uuid())
+  columnId   String  @map("column_id")
+  parentId   String? @map("parent_id")
+  slug       String
+  taskNumber Int     @map("task_number")
 
   title       String
   description String?
@@ -37,6 +39,7 @@ model Task {
   timeLogs TimeLog[]
   agenda   AgendaItem[]
 
+  @@index([slug])
   @@map("task")
 }
 

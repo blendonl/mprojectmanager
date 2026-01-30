@@ -10,7 +10,8 @@ model Project {
   id String @id @default(uuid())
 
   name        String
-  slug        String
+  slug        String        @unique
+  taskCounter Int           @default(0) @map("task_counter")
   description String?
   color       String        @default("#3B82F6")
   status      ProjectStatus @default(active)
