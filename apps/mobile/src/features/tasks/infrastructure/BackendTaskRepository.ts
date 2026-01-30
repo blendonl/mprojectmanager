@@ -1,10 +1,13 @@
 import { injectable, inject } from "tsyringe";
 import { Task } from "../domain/entities/Task";
-import { TaskRepository } from "../domain/repositories/TaskRepository";
+import {
+  TaskRepository,
+  GetAllTasksQuery,
+} from "../domain/repositories/TaskRepository";
 import { BackendApiClient } from "@infrastructure/api/BackendApiClient";
 import { BACKEND_API_CLIENT } from "@core/di/tokens";
-import { BoardId, ColumnId, TaskId } from "@core/types";
-import { TaskDto, TaskType, TaskPriority, TaskStatus } from "@mprojectmanager/shared-types";
+import { ColumnId, TaskId } from "@core/types";
+import { TaskDto, TaskType, TaskPriority, TaskStatus, PaginatedResponse } from "shared-types";
 
 @injectable()
 export class BackendTaskRepository implements TaskRepository {
@@ -12,114 +15,109 @@ export class BackendTaskRepository implements TaskRepository {
     @inject(BACKEND_API_CLIENT) private readonly apiClient: BackendApiClient,
   ) {}
 
-  async listTasks(boardId: BoardId, columnId: ColumnId): Promise<Task[]> {
-    const response = await this.apiClient.request<TaskDto[]>(
-      `/boards/${boardId}/columns/${columnId}/tasks`,
+  async listTasks(columnId: ColumnId): Promise<Task[]> {
+    const response = await this.apiClient.request<PaginatedResponse<TaskDto>>(
+      `/tasks?columnId=${columnId}`,
     );
-    return response.map((task) => this.mapTask(task));
+    return response.items.map((task) => this.mapTask(task));
   }
 
-  async getTaskById(boardId: BoardId, columnId: ColumnId, taskId: TaskId): Promise<Task> {
-    const response = await this.apiClient.request<TaskDto>(
-      `/boards/${boardId}/columns/${columnId}/tasks/${taskId}`,
+  async getAllTasks(query: GetAllTasksQuery): Promise<Task[]> {
+    const params = new URLSearchParams();
+    if (query.boardId) {
+      params.append('boardId', query.boardId);
+    }
+    if (query.search) {
+      params.append('search', query.search);
+    }
+
+    const response = await this.apiClient.request<PaginatedResponse<TaskDto>>(
+      `/tasks?${params.toString()}`,
     );
+    return response.items.map((task) => this.mapTask(task));
+  }
+
+  async getTaskById(taskId: TaskId): Promise<Task> {
+    const response = await this.apiClient.request<TaskDto>(`/tasks/${taskId}`);
     return this.mapTask(response);
   }
 
-  async createTask(
-    boardId: BoardId,
-    columnId: ColumnId,
-    data: {
-      title: string;
-      description?: string;
-      parentId?: string | null;
-      taskType?: TaskType;
-      priority?: TaskPriority;
-      position?: number;
-    },
-  ): Promise<Task> {
-    const payload = {
+  async createTask(data: Partial<Task> & { columnId: string; title: string }): Promise<Task> {
+    const payload: Record<string, any> = {
       title: data.title,
-      description: data.description || null,
-      parentId: data.parentId || null,
-      taskType: data.taskType || TaskType.REGULAR,
-      priority: data.priority || TaskPriority.LOW,
-      position: data.position ?? 0,
-      columnId: columnId,
+      columnId: data.columnId,
     };
 
-    const response = await this.apiClient.request<TaskDto>(
-      `/boards/${boardId}/columns/${columnId}/tasks`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      },
-    );
+    if (data.description !== undefined) {
+      payload.description = data.description;
+    }
+    if (data.parentId !== undefined) {
+      payload.parentId = data.parentId;
+    }
+    if (data.taskType !== undefined) {
+      payload.taskType = data.taskType;
+    }
+    if (data.priority !== undefined) {
+      payload.priority = data.priority;
+    }
+
+    console.log('Creating task with payload:', JSON.stringify(payload, null, 2));
+
+    const response = await this.apiClient.request<TaskDto>(`/tasks`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
     return this.mapTask(response);
   }
 
-  async updateTask(
-    boardId: BoardId,
-    columnId: ColumnId,
-    taskId: TaskId,
-    updates: {
-      title?: string;
-      description?: string;
-      parentId?: string | null;
-      columnId?: string;
-      taskType?: TaskType;
-      priority?: TaskPriority;
-      status?: TaskStatus;
-      position?: number;
-    },
-  ): Promise<Task> {
-    const payload = {
-      title: updates.title,
-      description: updates.description,
-      parentId: updates.parentId,
-      columnId: updates.columnId,
-      taskType: updates.taskType,
-      priority: updates.priority,
-      status: updates.status,
-      position: updates.position,
-    };
+  async updateTask(taskId: TaskId, updates: Partial<Task>): Promise<Task> {
+    const payload: Record<string, any> = {};
 
-    const response = await this.apiClient.request<TaskDto>(
-      `/boards/${boardId}/columns/${columnId}/tasks/${taskId}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      },
-    );
+    if (updates.title !== undefined && updates.title !== null) {
+      payload.title = updates.title;
+    }
+    if (updates.columnId !== undefined && updates.columnId !== null) {
+      payload.columnId = updates.columnId;
+    }
+    if (updates.description !== undefined && updates.description !== null) {
+      payload.description = updates.description;
+    }
+    if (updates.parentId !== undefined && updates.parentId !== null) {
+      payload.parentId = updates.parentId;
+    }
+    if (updates.taskType !== undefined && updates.taskType !== null) {
+      payload.taskType = updates.taskType;
+    }
+    if (updates.priority !== undefined && updates.priority !== null) {
+      payload.priority = updates.priority;
+    }
+    if (updates.position !== undefined && updates.position !== null) {
+      payload.position = updates.position;
+    }
+
+    console.log('Updating task with payload:', JSON.stringify(payload, null, 2));
+
+    const response = await this.apiClient.request<TaskDto>(`/tasks/${taskId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
     return this.mapTask(response);
   }
 
-  async deleteTask(
-    boardId: BoardId,
-    columnId: ColumnId,
-    taskId: TaskId,
-  ): Promise<boolean> {
-    await this.apiClient.request<{ deleted: boolean }>(
-      `/boards/${boardId}/columns/${columnId}/tasks/${taskId}`,
-      {
-        method: "DELETE",
-      },
-    );
+  async deleteTask(taskId: TaskId): Promise<boolean> {
+    await this.apiClient.request<{ deleted: boolean }>(`/tasks/${taskId}`, {
+      method: "DELETE",
+    });
     return true;
   }
 
-  async moveTask(
-    boardId: BoardId,
-    columnId: ColumnId,
-    taskId: TaskId,
-    targetColumnId: string,
-  ): Promise<Task> {
+  async moveTask(taskId: TaskId, targetColumnId: string): Promise<Task> {
     const response = await this.apiClient.request<TaskDto>(
-      `/boards/${boardId}/columns/${columnId}/tasks/${taskId}/move`,
+      `/tasks/${taskId}/move`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -130,29 +128,33 @@ export class BackendTaskRepository implements TaskRepository {
   }
 
   async getWorkDuration(
-    boardId: BoardId,
-    columnId: ColumnId,
     taskId: TaskId,
   ): Promise<{ durationMinutes: number; formattedDuration: string } | null> {
-    return this.apiClient.requestOrNull(
-      `/boards/${boardId}/columns/${columnId}/tasks/${taskId}/work-duration`,
-    );
+    return this.apiClient.requestOrNull(`/tasks/${taskId}/work-duration`);
   }
 
   private mapTask(dto: TaskDto): Task {
     return new Task({
       id: dto.id,
-      column_id: dto.columnId,
-      parent_id: dto.parentId || null,
+      slug: dto.slug,
       title: dto.title,
-      description: dto.description || undefined,
-      position: dto.position,
-      type: dto.taskType,
-      priority: dto.priority || TaskPriority.LOW,
+      description: dto.description,
+      taskType: dto.taskType,
       status: dto.status,
-      created_at: new Date(dto.createdAt),
-      updated_at: new Date(dto.updatedAt),
-      due_at: dto.dueDate ? new Date(dto.dueDate) : undefined,
+      priority: dto.priority,
+      columnId: dto.columnId,
+      boardId: dto.boardId,
+      projectId: dto.projectId,
+      goalId: dto.goalId,
+      position: dto.position,
+      dueDate: dto.dueDate,
+      estimatedMinutes: dto.estimatedMinutes,
+      actualMinutes: dto.actualMinutes,
+      filePath: dto.filePath,
+      completedAt: dto.completedAt,
+      parentId: dto.parentId,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     });
   }
 }
