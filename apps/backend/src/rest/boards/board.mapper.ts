@@ -1,7 +1,6 @@
 import { Board } from '@prisma/client';
 import { BoardDetailDto, BoardDto } from 'shared-types';
 import { BoardFindOneReturnType } from 'src/core/boards/data/board.find-one.return.type';
-import { TaskMapper } from '../task/task.mapper';
 
 export class BoardMapper {
   static mapToResponse(board: Board): BoardDto {
@@ -27,8 +26,8 @@ export class BoardMapper {
         position: column.position,
         color: column.color,
         wipLimit: column.limit,
-        tasks: (column.tasks || []).map((task) => TaskMapper.toResponse(task)),
-        taskCount: column.tasks?.length || 0,
+        tasks: [],
+        taskCount: 0,
       })),
       projectName: '',
     };
