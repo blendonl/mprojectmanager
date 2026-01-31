@@ -1,17 +1,16 @@
 import { useMemo } from 'react';
-import { Task } from '@features/tasks/domain/entities/Task';
+import { TaskDto, TaskPriority, TaskPriorityType } from 'shared-types';
 import { Parent } from '@domain/entities/Parent';
-import { TaskPriority } from 'shared-types';
 
 interface GroupedTasks {
   parentId: string | null;
   parent: Parent | null;
-  tasks: Task[];
+  tasks: TaskDto[];
   taskCount: number;
 }
 
 interface UseColumnGroupingOptions {
-  tasks: Task[];
+  tasks: TaskDto[];
   parents: Parent[];
   showParentGroups: boolean;
   sortByPriority?: boolean;
@@ -24,7 +23,7 @@ interface UseColumnGroupingReturn {
   groupCount: number;
 }
 
-const PRIORITY_ORDER: Record<TaskPriority, number> = {
+const PRIORITY_ORDER: Record<TaskPriorityType, number> = {
   [TaskPriority.URGENT]: 0,
   [TaskPriority.HIGH]: 1,
   [TaskPriority.MEDIUM]: 2,
@@ -64,10 +63,10 @@ export function useColumnGrouping(
       ];
     }
 
-    const groups = new Map<string | null, Task[]>();
+    const groups = new Map<string | null, TaskDto[]>();
 
     tasks.forEach((task) => {
-      const parentId = task.parent_id || null;
+      const parentId = task.parentId || null;
       if (!groups.has(parentId)) {
         groups.set(parentId, []);
       }
@@ -115,7 +114,7 @@ export function useColumnGrouping(
   const totalTaskCount = useMemo(() => tasks.length, [tasks.length]);
 
   const orphanedTaskCount = useMemo(() => {
-    return tasks.filter((task) => task.parent_id === null).length;
+    return tasks.filter((task) => task.parentId === null).length;
   }, [tasks]);
 
   const groupCount = useMemo(() => {

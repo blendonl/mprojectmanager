@@ -1,15 +1,15 @@
 import React, { useCallback, forwardRef } from 'react';
 import { FlatList, StyleSheet, ListRenderItem } from 'react-native';
-import { Task } from '@features/tasks/domain/entities/Task';
+import { TaskDto } from 'shared-types';
 import { Parent } from '@domain/entities/Parent';
 import { DraggableTaskCard } from '@features/boards/components/drag-drop';
 import theme from '@shared/theme';
 
 interface TaskListProps {
-  tasks: Task[];
+  tasks: TaskDto[];
   parents?: Parent[];
-  onTaskPress: (task: Task) => void;
-  onDragStart?: (task: Task) => void;
+  onTaskPress: (task: TaskDto) => void;
+  onDragStart?: (task: TaskDto) => void;
   onDragEnd?: (taskId: string, targetColumnId: string | null) => void;
   onContentSizeChange?: (width: number, height: number) => void;
 }
@@ -22,12 +22,12 @@ const TaskList = React.memo(forwardRef<FlatList, TaskListProps>(({
   onDragEnd,
   onContentSizeChange,
 }, ref) => {
-  const getTaskParent = useCallback((task: Task): Parent | undefined => {
+  const getTaskParent = useCallback((task: TaskDto): Parent | undefined => {
     if (!task.parentId) return undefined;
     return parents.find((p) => p.id === task.parentId);
   }, [parents]);
 
-  const renderTask: ListRenderItem<Task> = useCallback(
+  const renderTask: ListRenderItem<TaskDto> = useCallback(
     ({ item: task }) => (
       <DraggableTaskCard
         task={task}

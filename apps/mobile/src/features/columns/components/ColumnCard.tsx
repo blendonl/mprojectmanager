@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { View, StyleSheet, FlatList } from 'react-native';
-import { Column } from '../domain/entities/Column';
-import { Task } from '@features/tasks/domain/entities/Task';
+import { BoardColumnDto, TaskDto } from 'shared-types';
 import { Parent } from '@domain/entities/Parent';
 import { useColumnGrouping } from '../hooks/useColumnGrouping';
 import ColumnHeader from './ColumnHeader';
@@ -11,12 +10,12 @@ import AddTaskButton from './AddTaskButton';
 import theme from '@shared/theme';
 
 interface ColumnCardProps {
-  column: Column;
+  column: BoardColumnDto;
   parents?: Parent[];
   showParentGroups?: boolean;
-  onTaskPress: (task: Task) => void;
-  onTaskLongPress?: (task: Task) => void;
-  onDragStart?: (task: Task) => void;
+  onTaskPress: (task: TaskDto) => void;
+  onTaskLongPress?: (task: TaskDto) => void;
+  onDragStart?: (task: TaskDto) => void;
   onDragEnd?: (taskId: string, targetColumnId: string | null) => void;
   onAddTask: () => void;
   onColumnMenu?: () => void;

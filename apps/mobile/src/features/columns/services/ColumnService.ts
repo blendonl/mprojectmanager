@@ -1,39 +1,62 @@
 import { injectable, inject } from "tsyringe";
-import { Column } from "../domain/entities/Column";
-import { ColumnRepository } from "../domain/repositories/ColumnRepository";
 import { BoardId, ColumnId } from "@core/types";
-import { COLUMN_REPOSITORY } from "@core/di/tokens";
+import { BACKEND_API_CLIENT } from "@core/di/tokens";
 import { getEventBus } from "@core/EventBus";
-import { ValidationError } from "@core/exceptions";
+import { BackendApiClient } from "@infrastructure/api/BackendApiClient";
+import { ColumnDto, ColumnCreateRequestDto, ColumnUpdateRequestDto } from "shared-types";
 
 @injectable()
 export class ColumnService {
   constructor(
-    @inject(COLUMN_REPOSITORY) private repository: ColumnRepository,
+    @inject(BACKEND_API_CLIENT) private apiClient: BackendApiClient,
   ) {}
+
+  async getColumnById(columnId: ColumnId): Promise<ColumnDto | null> {
+    return await this.apiClient.requestOrNull<ColumnDto>(`/columns/${columnId}`);
+  }
 
   async createColumn(
     boardId: BoardId,
     name: string,
     position?: number | null,
-  ): Promise<Column> {
-    return await this.repository.createColumn(boardId, {
+  ): Promise<ColumnDto> {
+    const payload: ColumnCreateRequestDto = {
       name,
       position: position ?? 0,
-      limit: null,
+      boardId,
+      wipLimit: undefined,
+    };
+
+    return await this.apiClient.request<ColumnDto>(`/columns`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     });
   }
 
   async deleteColumn(boardId: BoardId, columnId: ColumnId): Promise<boolean> {
-    return await this.repository.deleteColumn(boardId, columnId);
+    await this.apiClient.request<{ deleted: boolean }>(`/columns/${columnId}`, {
+      method: "DELETE",
+    });
+    return true;
   }
 
   async updateColumn(
     boardId: BoardId,
     columnId: ColumnId,
     updates: { name?: string; position?: number; limit?: number | null },
-  ): Promise<Column> {
-    return await this.repository.updateColumn(boardId, columnId, updates);
+  ): Promise<ColumnDto> {
+    const payload: ColumnUpdateRequestDto = {
+      name: updates.name,
+      position: updates.position,
+      wipLimit: updates.limit,
+    };
+
+    return await this.apiClient.request<ColumnDto>(`/columns/${columnId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
   }
 
   async reorderColumn(
@@ -55,28 +78,5 @@ export class ColumnService {
       columnId,
       timestamp: new Date(),
     });
-  }
-
-  async validateColumnUpdate(
-    boardId: BoardId,
-    columnId: ColumnId,
-    updates: { name?: string }
-  ): Promise<{ valid: boolean; reason?: string }> {
-    if (updates.name && updates.name.trim().length === 0) {
-      return { valid: false, reason: "Column name cannot be empty" };
-    }
-
-    if (updates.name && updates.name.length > 50) {
-      return { valid: false, reason: "Column name must be 50 characters or less" };
-    }
-
-    return { valid: true };
-  }
-
-  async getColumnWithTasks(
-    boardId: BoardId,
-    columnId: ColumnId
-  ): Promise<Column | null> {
-    return null;
   }
 }

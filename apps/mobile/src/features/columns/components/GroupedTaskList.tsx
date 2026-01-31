@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { View, FlatList, StyleSheet, ListRenderItem } from 'react-native';
-import { Task } from '@features/tasks/domain/entities/Task';
+import { TaskDto } from 'shared-types';
 import { Parent } from '@domain/entities/Parent';
 import ParentGroup from '@shared/components/ParentGroup';
 import theme from '@shared/theme';
@@ -8,14 +8,14 @@ import theme from '@shared/theme';
 interface GroupedTasksData {
   parentId: string | null;
   parent: Parent | null;
-  tasks: Task[];
+  tasks: TaskDto[];
   taskCount: number;
 }
 
 interface GroupedTaskListProps {
   groups: GroupedTasksData[];
-  onTaskPress: (task: Task) => void;
-  onDragStart?: (task: Task) => void;
+  onTaskPress: (task: TaskDto) => void;
+  onDragStart?: (task: TaskDto) => void;
   onDragEnd?: (taskId: string, targetColumnId: string | null) => void;
 }
 
