@@ -1,29 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-} from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Screen } from '@shared/components/Screen';
-import AutoSaveIndicator from '@shared/components/AutoSaveIndicator';
-import { TaskTitleInput } from '@/features/tasks/components/TaskTitleInput';
-import { TaskDescriptionEditor } from '@/features/tasks/components/TaskDescriptionEditor';
-import { TaskPriorityPicker } from '@/features/tasks/components/TaskPriorityPicker';
-import { TaskIssueTypePicker } from '@/features/tasks/components/TaskIssueTypePicker';
-import { TaskParentPicker } from '@/features/tasks/components/TaskParentPicker';
-import { TaskDetailMetaBar } from '@/features/tasks/components/TaskDetailMetaBar';
-import { TaskDetailHeader } from '@/features/tasks/components/TaskDetailHeader';
-import { useTaskForm } from '@/features/tasks/hooks/useTaskForm';
-import { useTaskDetailData } from '@/features/tasks/hooks/useTaskDetailData';
-import { useTaskAutoSave } from '@/features/tasks/hooks/useTaskAutoSave';
-import { useTaskDetailActions } from '@/features/tasks/hooks/useTaskDetailActions';
-import { useMetaPickerState } from '@/features/tasks/hooks/useMetaPickerState';
-import { LoadingState } from '@/features/tasks/components/LoadingState';
-import theme from '@shared/theme/colors';
-import { spacing } from '@shared/theme/spacing';
+} from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Screen } from "@shared/components/Screen";
+import AutoSaveIndicator from "@shared/components/AutoSaveIndicator";
+import { TaskTitleInput } from "@/features/tasks/components/TaskTitleInput";
+import { TaskDescriptionEditor } from "@/features/tasks/components/TaskDescriptionEditor";
+import { TaskPriorityPicker } from "@/features/tasks/components/TaskPriorityPicker";
+import { TaskIssueTypePicker } from "@/features/tasks/components/TaskIssueTypePicker";
+import { TaskParentPicker } from "@/features/tasks/components/TaskParentPicker";
+import { TaskDetailMetaBar } from "@/features/tasks/components/TaskDetailMetaBar";
+import { TaskDetailHeader } from "@/features/tasks/components/TaskDetailHeader";
+import { TaskScheduler } from "@/features/tasks";
+import { useTaskForm } from "@/features/tasks/hooks/useTaskForm";
+import { useTaskDetailData } from "@/features/tasks/hooks/useTaskDetailData";
+import { useTaskAutoSave } from "@/features/tasks/hooks/useTaskAutoSave";
+import { useTaskDetailActions } from "@/features/tasks/hooks/useTaskDetailActions";
+import { useMetaPickerState } from "@/features/tasks/hooks/useMetaPickerState";
+import { LoadingState } from "@/features/tasks/components/LoadingState";
+import theme from "@shared/theme/colors";
+import { spacing } from "@shared/theme/spacing";
+import { TaskPriority, TaskType } from "shared-types";
 
 export default function TaskDetailRoute() {
   const { boardId, taskId, columnId } = useLocalSearchParams<{
@@ -35,6 +37,7 @@ export default function TaskDetailRoute() {
 
   const [createdTaskId, setCreatedTaskId] = useState<string | null>(null);
   const [showParentPicker, setShowParentPicker] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   const currentTaskId = taskId ?? createdTaskId;
   const isCreateMode = !currentTaskId;
@@ -44,13 +47,16 @@ export default function TaskDetailRoute() {
     taskId: currentTaskId,
   });
 
-  const initialFormData = React.useMemo(() => ({
-    title: task?.title || '',
-    description: task?.description || '',
-    parentId: task?.parentId || null,
-    issueType: task?.taskType || 'Task',
-    priority: task?.priority || 'low',
-  }), [task]);
+  const initialFormData = React.useMemo(
+    () => ({
+      title: task?.title || "",
+      description: task?.description || "",
+      parentId: task?.parentId || null,
+      issueType: task?.taskType || TaskType.TASK,
+      priority: task?.priority || TaskPriority.LOW,
+    }),
+    [task],
+  );
 
   const { formState, actions } = useTaskForm(initialFormData);
 
@@ -62,7 +68,7 @@ export default function TaskDetailRoute() {
 
   const { saveStatus } = useTaskAutoSave({
     task,
-    columnId: columnId || task?.columnId || '',
+    columnId: columnId || task?.columnId || "",
     formState,
     onTaskCreated: handleTaskCreated,
   });
@@ -76,20 +82,12 @@ export default function TaskDetailRoute() {
   const getColumnName = () => {
     if (columnId) return undefined;
     if (!task) return undefined;
-    return task.columnId;
+    return task.column.name;
   };
 
   const handleSchedulePress = () => {
     if (!task) return;
-    router.push({
-      pathname: '/(tabs)/agenda',
-      params: {
-        screen: 'TaskSchedule',
-        taskId: task.id,
-        boardId,
-        taskData: JSON.stringify(task.toDict()),
-      },
-    });
+    setShowScheduleModal(true);
   };
 
   if (loading) {
@@ -102,7 +100,7 @@ export default function TaskDetailRoute() {
         tasks={allTasks}
         loading={false}
         selectedParentId={formState.parentId}
-        onSelect={(parentId) => actions.updateField('parentId', parentId)}
+        onSelect={(parentId) => actions.updateField("parentId", parentId)}
         onClose={() => setShowParentPicker(false)}
       />
     );
@@ -112,11 +110,14 @@ export default function TaskDetailRoute() {
     <Screen style={styles.container} scrollable={false}>
       <KeyboardAvoidingView
         style={styles.keyboardContainer}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={88}
       >
         <AutoSaveIndicator status={saveStatus} />
-        <ScrollView style={styles.scrollView} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          style={styles.scrollView}
+          keyboardShouldPersistTaps="handled"
+        >
           {!isCreateMode && <TaskDetailHeader onDelete={handleDelete} />}
 
           <TaskDetailMetaBar
@@ -125,8 +126,8 @@ export default function TaskDetailRoute() {
             selectedParent={selectedParent}
             columnName={getColumnName()}
             activeMetaPicker={activeMetaPicker}
-            onPriorityPress={() => togglePicker('priority')}
-            onIssueTypePress={() => togglePicker('issueType')}
+            onPriorityPress={() => togglePicker("priority")}
+            onIssueTypePress={() => togglePicker("issueType")}
             onParentPress={() => setShowParentPicker(true)}
             isCreateMode={isCreateMode}
             task={task}
@@ -134,21 +135,21 @@ export default function TaskDetailRoute() {
             onSchedulePress={!isCreateMode ? handleSchedulePress : undefined}
           />
 
-          {activeMetaPicker === 'priority' && (
+          {activeMetaPicker === "priority" && (
             <TaskPriorityPicker
               selectedPriority={formState.priority}
               onSelect={(priority) => {
-                actions.updateField('priority', priority);
+                actions.updateField("priority", priority);
                 closePicker();
               }}
             />
           )}
 
-          {activeMetaPicker === 'issueType' && (
+          {activeMetaPicker === "issueType" && (
             <TaskIssueTypePicker
               selectedIssueType={formState.issueType}
               onSelect={(issueType) => {
-                actions.updateField('issueType', issueType);
+                actions.updateField("issueType", issueType);
                 closePicker();
               }}
             />
@@ -156,20 +157,26 @@ export default function TaskDetailRoute() {
 
           <TaskTitleInput
             value={formState.title}
-            onChangeText={(text) => actions.updateField('title', text)}
+            onChangeText={(text) => actions.updateField("title", text)}
             placeholder="Untitled task"
             autoFocus={isCreateMode}
           />
 
           <TaskDescriptionEditor
             value={formState.description}
-            onChangeText={(text) => actions.updateField('description', text)}
+            onChangeText={(text) => actions.updateField("description", text)}
             placeholder="Start writing your task details..."
           />
 
           <View style={styles.bottomPadding} />
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <TaskScheduler
+        task={task}
+        visible={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+      />
     </Screen>
   );
 }

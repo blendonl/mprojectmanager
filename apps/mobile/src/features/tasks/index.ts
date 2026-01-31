@@ -1,11 +1,7 @@
-export { default as TaskDetailScreen } from './screens/TaskDetailScreen';
+export { default as TaskCard } from "./components/TaskCard";
+export { default as MoveToColumnModal } from "./components/MoveToColumnModal";
+export { TaskScheduler } from "./components/TaskScheduler";
 
-export { default as TaskCard } from './components/TaskCard';
-export { default as MoveToColumnModal } from './components/MoveToColumnModal';
+export { TaskService } from "./services/TaskService";
 
-export { Task } from './domain/entities/Task';
-export type { TaskRepository } from './domain/repositories/TaskRepository';
-export { TaskService } from './services/TaskService';
-export { BackendTaskRepository } from './infrastructure/BackendTaskRepository';
-
-export { useTaskActions } from './hooks/useTaskActions';
+export { useTaskActions } from "./hooks/useTaskActions";
