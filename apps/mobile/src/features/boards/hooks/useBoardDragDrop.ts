@@ -1,29 +1,27 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { FlatList } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { Board } from '../domain/entities/Board';
-import { Task } from '@features/tasks/domain/entities/Task';
+import { TaskDto } from 'shared-types';
 import { runOnJS } from 'react-native-reanimated';
+import { useTaskService } from '@core/di/hooks';
 
 interface UseBoardDragDropOptions {
-  board: Board | null;
   onMoveTask: (taskId: string, targetColumnId: string) => Promise<boolean>;
-  onValidateMove: (board: Board, taskId: string, targetColumnId: string) => Promise<{ valid: boolean; reason?: string }>;
 }
 
 interface UseBoardDragDropReturn {
   boardListRef: React.RefObject<FlatList>;
-  handleDragStart: (task: Task) => void;
+  handleDragStart: (task: TaskDto) => void;
   handleDragEnd: (taskId: string, targetColumnId: string | null) => Promise<void>;
-  validateDrop: (taskId: string, targetColumnId: string) => Promise<{ valid: boolean; reason?: string }>;
 }
 
 export function useBoardDragDrop(options: UseBoardDragDropOptions): UseBoardDragDropReturn {
-  const { board, onMoveTask, onValidateMove } = options;
+  const { onMoveTask } = options;
   const boardListRef = useRef<FlatList>(null);
   const activeDragRef = useRef<string | null>(null);
+  const taskService = useTaskService();
 
-  const handleDragStart = useCallback((task: Task) => {
+  const handleDragStart = useCallback((task: TaskDto) => {
     console.log('[useBoardDragDrop] handleDragStart', task.id);
     activeDragRef.current = task.id;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -38,13 +36,13 @@ export function useBoardDragDrop(options: UseBoardDragDropOptions): UseBoardDrag
         return;
       }
 
-      if (!targetColumnId || !board) {
-        console.log('[useBoardDragDrop] No target or board');
+      if (!targetColumnId) {
+        console.log('[useBoardDragDrop] No target column');
         activeDragRef.current = null;
         return;
       }
 
-      const task = board.getTaskById(taskId);
+      const task = await taskService.getTaskDetail(taskId);
       if (!task) {
         console.log('[useBoardDragDrop] Task not found');
         activeDragRef.current = null;
@@ -53,16 +51,6 @@ export function useBoardDragDrop(options: UseBoardDragDropOptions): UseBoardDrag
 
       if (task.columnId === targetColumnId) {
         console.log('[useBoardDragDrop] Same column');
-        activeDragRef.current = null;
-        return;
-      }
-
-      console.log('[useBoardDragDrop] Validating move...');
-      const validation = await onValidateMove(board, taskId, targetColumnId);
-      console.log('[useBoardDragDrop] Validation result:', validation);
-
-      if (!validation.valid) {
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         activeDragRef.current = null;
         return;
       }
@@ -79,30 +67,18 @@ export function useBoardDragDrop(options: UseBoardDragDropOptions): UseBoardDrag
 
       activeDragRef.current = null;
     },
-    [board, onMoveTask, onValidateMove]
-  );
-
-  const validateDrop = useCallback(
-    async (taskId: string, targetColumnId: string) => {
-      if (!board) {
-        return { valid: false, reason: 'Board not loaded' };
-      }
-
-      return await onValidateMove(board, taskId, targetColumnId);
-    },
-    [board, onValidateMove]
+    [onMoveTask, taskService]
   );
 
   useEffect(() => {
     return () => {
       activeDragRef.current = null;
     };
-  }, [board]);
+  }, []);
 
   return {
     boardListRef,
     handleDragStart,
     handleDragEnd,
-    validateDrop,
   };
 }

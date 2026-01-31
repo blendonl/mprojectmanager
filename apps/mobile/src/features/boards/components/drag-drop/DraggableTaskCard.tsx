@@ -7,16 +7,16 @@ import Animated, {
   withTiming,
   runOnJS,
 } from 'react-native-reanimated';
-import { Task } from '@features/tasks/domain/entities/Task';
+import { TaskDto } from 'shared-types';
 import { Parent } from '@domain/entities/Parent';
 import { TaskCard } from '@features/tasks/components';
 import { useBoardDrag } from './BoardDragContext';
 
 interface DraggableTaskCardProps {
-  task: Task;
+  task: TaskDto;
   parent?: Parent;
   onPress: () => void;
-  onDragStart?: (task: Task) => void;
+  onDragStart?: (task: TaskDto) => void;
   onDragEnd?: (taskId: string, targetColumnId: string | null) => void;
 }
 

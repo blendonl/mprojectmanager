@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { getBoardService } from '@/core/di/hooks';
 import alertService from '@/services/AlertService';
 import logger from '@/utils/logger';
-import { Board } from '../domain/entities/Board';
+import { BoardDto } from 'shared-types';
 import * as Haptics from 'expo-haptics';
 
 interface UseBoardActionsOptions {
@@ -10,7 +10,7 @@ interface UseBoardActionsOptions {
 }
 
 interface UseBoardActionsReturn {
-  handleCreateBoard: (projectId: string, name: string, description?: string) => Promise<Board | null>;
+  handleCreateBoard: (projectId: string, name: string, description?: string) => Promise<BoardDto | null>;
   handleUpdateBoard: (boardId: string, updates: { name?: string; description?: string }) => Promise<boolean>;
   handleDeleteBoard: (boardId: string) => Promise<boolean>;
   isLoading: boolean;
@@ -21,7 +21,7 @@ export function useBoardActions(options?: UseBoardActionsOptions): UseBoardActio
   const boardService = getBoardService();
 
   const handleCreateBoard = useCallback(
-    async (projectId: string, name: string, description: string = ''): Promise<Board | null> => {
+    async (projectId: string, name: string, description: string = ''): Promise<BoardDto | null> => {
       try {
         setIsLoading(true);
         const board = await boardService.createBoardInProject(projectId, name, description);

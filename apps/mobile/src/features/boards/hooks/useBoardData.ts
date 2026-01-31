@@ -1,12 +1,12 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'expo-router';
-import { Board } from '../domain/entities/Board';
+import { BoardDetailDto } from 'shared-types';
 import { useBoardService } from '@/core/di/hooks';
 import alertService from '@/services/AlertService';
 import logger from '@/utils/logger';
 
 interface UseBoardDataReturn {
-  board: Board | null;
+  board: BoardDetailDto | null;
   loading: boolean;
   refreshing: boolean;
   error: Error | null;
@@ -19,7 +19,7 @@ const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY = 1000;
 
 export function useBoardData(boardId: string | undefined): UseBoardDataReturn {
-  const [board, setBoard] = useState<Board | null>(null);
+  const [board, setBoard] = useState<BoardDetailDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<Error | null>(null);

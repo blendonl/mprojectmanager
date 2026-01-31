@@ -2,20 +2,19 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, FlatList } from 'react-native';
 import { useAnimatedReaction, useSharedValue, runOnJS } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { Column } from '@features/columns/domain/entities/Column';
+import { BoardColumnDto, TaskDto } from 'shared-types';
 import { ColumnCard } from '@features/columns/components';
-import { Task } from '@features/tasks/domain/entities/Task';
 import { Parent } from '@domain/entities/Parent';
 import { useBoardDrag } from './BoardDragContext';
 
 interface DroppableColumnProps {
-  column: Column;
+  column: BoardColumnDto;
   parents?: Parent[];
   showParentGroups?: boolean;
-  onTaskPress: (task: Task) => void;
+  onTaskPress: (task: TaskDto) => void;
   onAddTask: () => void;
   onColumnMenu?: () => void;
-  onDragStart?: (task: Task) => void;
+  onDragStart?: (task: TaskDto) => void;
   onDragEnd?: (taskId: string, targetColumnId: string | null) => void;
   onValidateDrop?: (taskId: string, columnId: string) => Promise<{ valid: boolean; reason?: string }>;
   registerVerticalScroll?: (

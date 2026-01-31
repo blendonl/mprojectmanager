@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { useNavigation } from 'expo-router';
-import { Board } from '../domain/entities/Board';
+import { BoardDetailDto } from 'shared-types';
 
 interface UseBoardNavigationProps {
-  board: Board | null;
+  board: BoardDetailDto | null;
   refreshBoard: () => Promise<void>;
 }
 

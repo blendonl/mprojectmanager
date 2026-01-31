@@ -4,13 +4,13 @@ import Animated, {
   useAnimatedStyle,
 } from 'react-native-reanimated';
 import { TaskCard } from '@features/tasks/components';
-import { Task } from '@features/tasks/domain/entities/Task';
+import { TaskDto } from 'shared-types';
 import { Parent } from '@domain/entities/Parent';
 import { useBoardDrag } from './BoardDragContext';
 import theme from '@shared/theme';
 
 interface DragOverlayProps {
-  task: Task | null;
+  task: TaskDto | null;
   parent?: Parent;
 }
 
