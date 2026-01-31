@@ -2,13 +2,12 @@ import { useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Task } from '../domain/entities/Task';
-import { getTaskService, getBoardService } from '@/core/di/hooks';
+import { useTaskService } from '@/core/di/hooks';
 import alertService from '@/services/AlertService';
 import logger from '@/utils/logger';
 import { TaskStatus } from 'shared-types';
 
 interface UseTaskActionsOptions {
-  boardId: string;
   onDataChanged?: () => Promise<void>;
 }
 
@@ -23,19 +22,18 @@ interface UseTaskActionsReturn {
 }
 
 export function useTaskActions(options: UseTaskActionsOptions): UseTaskActionsReturn {
-  const { boardId, onDataChanged } = options;
+  const { onDataChanged } = options;
   const router = useRouter();
-  const taskService = getTaskService();
-  const boardService = getBoardService();
+  const taskService = useTaskService();
 
   const handleTaskPress = useCallback(
     (task: Task) => {
       router.push({
         pathname: '/tasks/[taskId]' as const,
-        params: { taskId: task.id, boardId },
+        params: { taskId: task.id },
       });
     },
-    [boardId, router]
+    [router]
   );
 
   const handleTaskLongPress = useCallback(async (task: Task) => {
@@ -45,28 +43,6 @@ export function useTaskActions(options: UseTaskActionsOptions): UseTaskActionsRe
   const handleMoveTask = useCallback(
     async (taskId: string, targetColumnId: string): Promise<boolean> => {
       try {
-        const board = await boardService.getBoardById(boardId);
-
-        const targetColumn = board.getColumnById(targetColumnId);
-        const task = board.getTaskById(taskId);
-
-        if (!targetColumn || !task) {
-          alertService.showError('Column or task not found');
-          return false;
-        }
-
-        if (task.columnId === targetColumnId) {
-          alertService.showError('Task is already in this column');
-          return false;
-        }
-
-        if (targetColumn.limit !== null && targetColumn.tasks.length >= targetColumn.limit) {
-          alertService.showError(
-            `Column "${targetColumn.name}" is at WIP limit (${targetColumn.limit})`
-          );
-          return false;
-        }
-
         await taskService.moveTaskBetweenColumns(taskId, targetColumnId);
 
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -77,7 +53,7 @@ export function useTaskActions(options: UseTaskActionsOptions): UseTaskActionsRe
 
         return true;
       } catch (error) {
-        logger.error('Failed to move task', error, { boardId, taskId, targetColumnId });
+        logger.error('Failed to move task', error, { taskId, targetColumnId });
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         alertService.showError(
           error instanceof Error ? error.message : 'Failed to move task'
@@ -85,31 +61,13 @@ export function useTaskActions(options: UseTaskActionsOptions): UseTaskActionsRe
         return false;
       }
     },
-    [boardId, boardService, taskService, onDataChanged]
+    [taskService, onDataChanged]
   );
 
   const handleBatchMoveTasks = useCallback(
     async (taskIds: string[], targetColumnId: string): Promise<boolean> => {
       try {
-        const board = await boardService.getBoardById(boardId);
-        const targetColumn = board.getColumnById(targetColumnId);
-
-        if (!targetColumn) {
-          alertService.showError('Target column not found');
-          return false;
-        }
-
-        if (
-          targetColumn.limit !== null &&
-          targetColumn.tasks.length + taskIds.length > targetColumn.limit
-        ) {
-          alertService.showError(
-            `Column "${targetColumn.name}" cannot hold ${taskIds.length} more tasks (limit: ${targetColumn.limit})`
-          );
-          return false;
-        }
-
-        await taskService.batchMoveTasks(boardId, taskIds, targetColumnId);
+        await taskService.batchMoveTasks(taskIds, targetColumnId);
 
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         alertService.showSuccess(`Moved ${taskIds.length} tasks`);
@@ -121,7 +79,6 @@ export function useTaskActions(options: UseTaskActionsOptions): UseTaskActionsRe
         return true;
       } catch (error) {
         logger.error('Failed to batch move tasks', error, {
-          boardId,
           taskIds,
           targetColumnId,
         });
@@ -130,21 +87,13 @@ export function useTaskActions(options: UseTaskActionsOptions): UseTaskActionsRe
         return false;
       }
     },
-    [boardId, boardService, taskService, onDataChanged]
+    [taskService, onDataChanged]
   );
 
   const handleQuickComplete = useCallback(
     async (taskId: string): Promise<boolean> => {
       try {
-        const board = await boardService.getBoardById(boardId);
-        const task = board.getTaskById(taskId);
-
-        if (!task) {
-          alertService.showError('Task not found');
-          return false;
-        }
-
-        await taskService.updateTask(board, taskId, {
+        await taskService.updateTask(taskId, {
           status: TaskStatus.DONE,
         });
 
@@ -157,30 +106,29 @@ export function useTaskActions(options: UseTaskActionsOptions): UseTaskActionsRe
 
         return true;
       } catch (error) {
-        logger.error('Failed to complete task', error, { boardId, taskId });
+        logger.error('Failed to complete task', error, { taskId });
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         alertService.showError('Failed to complete task');
         return false;
       }
     },
-    [boardId, boardService, taskService, onDataChanged]
+    [taskService, onDataChanged]
   );
 
   const handleAddTask = useCallback(
     (columnId: string) => {
       router.push({
         pathname: '/tasks/new' as const,
-        params: { boardId, columnId },
+        params: { columnId },
       });
     },
-    [boardId, router]
+    [router]
   );
 
   const handleDeleteTask = useCallback(
     async (taskId: string): Promise<boolean> => {
       try {
-        const board = await boardService.getBoardById(boardId);
-        await taskService.deleteTask(board, taskId);
+        await taskService.deleteTask(taskId);
 
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         alertService.showSuccess('Task deleted');
@@ -191,13 +139,13 @@ export function useTaskActions(options: UseTaskActionsOptions): UseTaskActionsRe
 
         return true;
       } catch (error) {
-        logger.error('Failed to delete task', error, { boardId, taskId });
+        logger.error('Failed to delete task', error, { taskId });
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         alertService.showError('Failed to delete task');
         return false;
       }
     },
-    [boardId, boardService, taskService, onDataChanged]
+    [taskService, onDataChanged]
   );
 
   return {

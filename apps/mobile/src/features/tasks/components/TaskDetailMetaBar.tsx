@@ -1,14 +1,20 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { Task } from '../domain/entities/Task';
-import AppIcon from '@shared/components/icons/AppIcon';
-import theme from '@shared/theme/colors';
-import { spacing } from '@shared/theme/spacing';
-import { getIssueTypeIcon } from '@utils/issueTypeUtils';
-import { MetaPickerType } from '../hooks/useMetaPickerState';
-import { TaskScheduleChip } from './TaskScheduleChip';
-import { PRIORITY_OPTIONS } from '../constants/priorities';
-import { TaskPriority } from 'shared-types';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
+import { Task } from "../domain/entities/Task";
+import AppIcon from "@shared/components/icons/AppIcon";
+import theme from "@shared/theme/colors";
+import { spacing } from "@shared/theme/spacing";
+import { getIssueTypeIcon } from "@utils/issueTypeUtils";
+import { MetaPickerType } from "../hooks/useMetaPickerState";
+import { TaskScheduleChip } from "./TaskScheduleChip";
+import { PRIORITY_OPTIONS } from "../constants/priorities";
+import { TaskPriority } from "shared-types";
 
 interface TaskDetailMetaBarProps {
   priority: TaskPriority;
@@ -39,7 +45,9 @@ export const TaskDetailMetaBar: React.FC<TaskDetailMetaBarProps> = ({
   boardId,
   onSchedulePress,
 }) => {
-  const selectedPriority = PRIORITY_OPTIONS.find((option) => option.value === priority) || PRIORITY_OPTIONS[3];
+  const selectedPriority =
+    PRIORITY_OPTIONS.find((option) => option.value === priority) ||
+    PRIORITY_OPTIONS[3];
 
   return (
     <View style={styles.container}>
@@ -51,19 +59,26 @@ export const TaskDetailMetaBar: React.FC<TaskDetailMetaBarProps> = ({
         <TouchableOpacity
           style={[
             styles.metaChip,
-            activeMetaPicker === 'priority' && styles.metaChipActive,
+            activeMetaPicker === "priority" && styles.metaChipActive,
           ]}
           onPress={onPriorityPress}
           activeOpacity={0.85}
         >
-          <View style={[styles.priorityDot, { backgroundColor: selectedPriority.color }]} />
-          <Text style={styles.metaChipText}>Priority: {selectedPriority.label}</Text>
+          <View
+            style={[
+              styles.priorityDot,
+              { backgroundColor: selectedPriority.color },
+            ]}
+          />
+          <Text style={styles.metaChipText}>
+            Priority: {selectedPriority.label}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[
             styles.metaChip,
-            activeMetaPicker === 'issueType' && styles.metaChipActive,
+            activeMetaPicker === "issueType" && styles.metaChipActive,
           ]}
           onPress={onIssueTypePress}
           activeOpacity={0.85}
@@ -82,7 +97,9 @@ export const TaskDetailMetaBar: React.FC<TaskDetailMetaBarProps> = ({
           activeOpacity={0.85}
         >
           {selectedParent ? (
-            <Text style={styles.metaChipText}>Parent: {selectedParent.title}</Text>
+            <Text style={styles.metaChipText}>
+              Parent: {selectedParent.title}
+            </Text>
           ) : (
             <Text style={styles.metaChipText}>Parent: None</Text>
           )}
@@ -116,8 +133,8 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   metaChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: spacing.xs,
     backgroundColor: theme.glass.tint.neutral,
     borderRadius: 16,
@@ -128,11 +145,11 @@ const styles = StyleSheet.create({
   },
   metaChipActive: {
     borderColor: theme.accent.primary,
-    backgroundColor: theme.accent.primary + '20',
+    backgroundColor: theme.accent.primary + "20",
   },
   metaChipStatic: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: spacing.xs,
     backgroundColor: theme.glass.tint.neutral,
     borderRadius: 16,
@@ -144,7 +161,7 @@ const styles = StyleSheet.create({
   metaChipText: {
     color: theme.text.secondary,
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   priorityDot: {
     width: 8,

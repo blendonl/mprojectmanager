@@ -1,18 +1,23 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { IssueType } from '@core/enums';
-import { TaskPriority } from 'shared-types';
-import { TaskFormState, TaskFormHook } from '../types';
+import { useState, useCallback, useEffect, useRef } from "react";
+import { TaskPriority, TaskType } from "shared-types";
+import { TaskFormState, TaskFormHook } from "../types";
 
-const getInitialState = (initialData?: Partial<TaskFormState>): TaskFormState => ({
-  title: initialData?.title || '',
-  description: initialData?.description || '',
+const getInitialState = (
+  initialData?: Partial<TaskFormState>,
+): TaskFormState => ({
+  title: initialData?.title || "",
+  description: initialData?.description || "",
   parentId: initialData?.parentId || null,
-  issueType: initialData?.issueType || IssueType.TASK,
+  issueType: initialData?.issueType || TaskType.TASK,
   priority: initialData?.priority || TaskPriority.LOW,
 });
 
-export function useTaskForm(initialData?: Partial<TaskFormState>): TaskFormHook {
-  const [formState, setFormState] = useState<TaskFormState>(getInitialState(initialData));
+export function useTaskForm(
+  initialData?: Partial<TaskFormState>,
+): TaskFormHook {
+  const [formState, setFormState] = useState<TaskFormState>(
+    getInitialState(initialData),
+  );
   const isInitialLoad = useRef(true);
 
   useEffect(() => {
@@ -24,12 +29,12 @@ export function useTaskForm(initialData?: Partial<TaskFormState>): TaskFormHook 
     }
   }, [initialData]);
 
-  const updateField = useCallback(<K extends keyof TaskFormState>(
-    field: K,
-    value: TaskFormState[K]
-  ) => {
-    setFormState((prev) => ({ ...prev, [field]: value }));
-  }, []);
+  const updateField = useCallback(
+    <K extends keyof TaskFormState>(field: K, value: TaskFormState[K]) => {
+      setFormState((prev) => ({ ...prev, [field]: value }));
+    },
+    [],
+  );
 
   const reset = useCallback(() => {
     setFormState(getInitialState());
