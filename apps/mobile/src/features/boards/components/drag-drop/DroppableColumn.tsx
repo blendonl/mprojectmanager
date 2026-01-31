@@ -9,6 +9,7 @@ import { useBoardDrag } from './BoardDragContext';
 
 interface DroppableColumnProps {
   column: BoardColumnDto;
+  tasks: TaskDto[];
   parents?: Parent[];
   showParentGroups?: boolean;
   onTaskPress: (task: TaskDto) => void;
@@ -17,6 +18,9 @@ interface DroppableColumnProps {
   onDragStart?: (task: TaskDto) => void;
   onDragEnd?: (taskId: string, targetColumnId: string | null) => void;
   onValidateDrop?: (taskId: string, columnId: string) => Promise<{ valid: boolean; reason?: string }>;
+  onLoadMore?: () => void;
+  isLoadingMore?: boolean;
+  hasMore?: boolean;
   registerVerticalScroll?: (
     columnId: string,
     ref: React.RefObject<FlatList | null>,
@@ -29,6 +33,7 @@ interface DroppableColumnProps {
 
 export const DroppableColumn: React.FC<DroppableColumnProps> = ({
   column,
+  tasks,
   parents = [],
   showParentGroups = false,
   onTaskPress,
@@ -37,6 +42,9 @@ export const DroppableColumn: React.FC<DroppableColumnProps> = ({
   onDragStart,
   onDragEnd,
   onValidateDrop,
+  onLoadMore,
+  isLoadingMore = false,
+  hasMore = false,
   registerVerticalScroll,
   handleVerticalScroll,
   unregisterVerticalScroll,
@@ -126,6 +134,7 @@ export const DroppableColumn: React.FC<DroppableColumnProps> = ({
     <View ref={columnRef} style={styles.container}>
       <ColumnCard
         column={column}
+        tasks={tasks}
         parents={parents}
         showParentGroups={showParentGroups}
         onTaskPress={onTaskPress}
@@ -133,6 +142,9 @@ export const DroppableColumn: React.FC<DroppableColumnProps> = ({
         onColumnMenu={onColumnMenu}
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
+        onLoadMore={onLoadMore}
+        isLoadingMore={isLoadingMore}
+        hasMore={hasMore}
         registerVerticalScroll={registerVerticalScroll}
         handleVerticalScroll={handleVerticalScroll}
         unregisterVerticalScroll={unregisterVerticalScroll}

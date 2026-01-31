@@ -1,19 +1,19 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { FlatList, StyleSheet } from "react-native";
 import theme from "@/shared/theme";
-import { Column } from "@/features/columns/domain/entities/Column";
-import { Task } from "@/features/tasks/domain/entities/Task";
+import { BoardColumnDto, TaskDto } from "shared-types";
 import { DragOverlay, DroppableColumn, useBoardDrag } from "@/features/boards/components/drag-drop";
 import { useAutoScroll } from "@/features/boards/hooks/useAutoScroll";
+import { useBoardTasks } from "@/features/boards/hooks";
 
 interface BoardColumnsProps {
-  columns: Column[];
+  columns: BoardColumnDto[];
   bottomPadding: number;
-  onTaskPress: (task: Task) => void;
-  onDragStart?: (task: Task) => void;
+  onTaskPress: (task: TaskDto) => void;
+  onDragStart?: (task: TaskDto) => void;
   onDragEnd?: (taskId: string, targetColumnId: string | null) => void;
   onAddTask: (columnId: string) => void;
-  draggedTask?: Task | null;
+  draggedTask?: TaskDto | null;
 }
 
 export default function BoardColumns({
@@ -26,7 +26,7 @@ export default function BoardColumns({
   draggedTask,
 }: BoardColumnsProps) {
   const dragContext = useBoardDrag();
-  const listRef = useRef<FlatList<Column>>(null);
+  const listRef = useRef<FlatList<BoardColumnDto>>(null);
   const {
     handleHorizontalScroll,
     handleHorizontalContentSize,
@@ -41,6 +41,18 @@ export default function BoardColumns({
     horizontalScrollRef: listRef,
   });
 
+  const {
+    loadInitialTasks,
+    loadMoreTasks,
+    getTasksForColumn,
+    isLoadingMore,
+    hasMore,
+  } = useBoardTasks({ columns });
+
+  useEffect(() => {
+    loadInitialTasks();
+  }, [loadInitialTasks]);
+
   return (
     <>
       <FlatList
@@ -52,10 +64,14 @@ export default function BoardColumns({
         renderItem={({ item: column }) => (
           <DroppableColumn
             column={column}
+            tasks={getTasksForColumn(column.id)}
             onTaskPress={onTaskPress}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
             onAddTask={() => onAddTask(column.id)}
+            onLoadMore={() => loadMoreTasks(column.id)}
+            isLoadingMore={isLoadingMore(column.id)}
+            hasMore={hasMore(column.id)}
             registerVerticalScroll={registerVerticalScroll}
             handleVerticalScroll={handleVerticalScroll}
             unregisterVerticalScroll={unregisterVerticalScroll}
