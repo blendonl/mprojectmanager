@@ -29,6 +29,7 @@ export class RoutineAgendaPlanner {
 
     const existingItems = await this.prisma.agendaItem.findMany({
       where: { agendaId: agenda.id },
+      include: { logs: { orderBy: { createdAt: 'asc' } } },
     });
 
     const occupied = this.collectOccupied(existingItems);

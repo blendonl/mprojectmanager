@@ -7,8 +7,8 @@ import { AgendaGetOneUseCase } from '../usecase/agenda.get-one.usecase';
 import { AgendaGetByDateUseCase } from '../usecase/agenda.get-by-date.usecase';
 import { AgendaUpdateUseCase } from '../usecase/agenda.update.usecase';
 import { AgendaDeleteUseCase } from '../usecase/agenda.delete.usecase';
-import { AgendaGetEnrichedByDateUseCase } from '../usecase/agenda.get-enriched-by-date.usecase';
 import { AgendaGetDateRangeUseCase } from '../usecase/agenda.get-date-range.usecase';
+import { AgendaGetRangeSummaryUseCase } from '../usecase/agenda.get-range-summary.usecase';
 
 @Injectable()
 export class AgendaCoreService {
@@ -19,8 +19,8 @@ export class AgendaCoreService {
     private readonly agendaGetByDateUseCase: AgendaGetByDateUseCase,
     private readonly agendaUpdateUseCase: AgendaUpdateUseCase,
     private readonly agendaDeleteUseCase: AgendaDeleteUseCase,
-    private readonly agendaGetEnrichedByDateUseCase: AgendaGetEnrichedByDateUseCase,
     private readonly agendaGetDateRangeUseCase: AgendaGetDateRangeUseCase,
+    private readonly agendaGetRangeSummaryUseCase: AgendaGetRangeSummaryUseCase,
   ) {}
 
   async createAgenda(data: AgendaCreateData) {
@@ -47,11 +47,21 @@ export class AgendaCoreService {
     return this.agendaDeleteUseCase.execute(id);
   }
 
-  async getEnrichedAgendaByDate(date: Date) {
-    return this.agendaGetEnrichedByDateUseCase.execute(date);
-  }
-
   async getAgendasForDateRange(startDate: Date, endDate: Date) {
     return this.agendaGetDateRangeUseCase.execute(startDate, endDate);
+  }
+
+  async getAgendaSummaryForDateRange(
+    startDate: Date,
+    endDate: Date,
+    page: number,
+    limit: number,
+  ) {
+    return this.agendaGetRangeSummaryUseCase.execute(
+      startDate,
+      endDate,
+      page,
+      limit,
+    );
   }
 }

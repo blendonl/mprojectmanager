@@ -12,8 +12,8 @@ import { AgendaGetOneUseCase } from './usecase/agenda.get-one.usecase';
 import { AgendaGetByDateUseCase } from './usecase/agenda.get-by-date.usecase';
 import { AgendaUpdateUseCase } from './usecase/agenda.update.usecase';
 import { AgendaDeleteUseCase } from './usecase/agenda.delete.usecase';
-import { AgendaGetEnrichedByDateUseCase } from './usecase/agenda.get-enriched-by-date.usecase';
 import { AgendaGetDateRangeUseCase } from './usecase/agenda.get-date-range.usecase';
+import { AgendaGetRangeSummaryUseCase } from './usecase/agenda.get-range-summary.usecase';
 
 @Module({
   imports: [PrismaModule],
@@ -32,8 +32,8 @@ import { AgendaGetDateRangeUseCase } from './usecase/agenda.get-date-range.useca
     AgendaGetByDateUseCase,
     AgendaUpdateUseCase,
     AgendaDeleteUseCase,
-    AgendaGetEnrichedByDateUseCase,
     AgendaGetDateRangeUseCase,
+    AgendaGetRangeSummaryUseCase,
     AgendaCoreService,
   ],
   exports: [AgendaCoreService, AGENDA_REPOSITORY],

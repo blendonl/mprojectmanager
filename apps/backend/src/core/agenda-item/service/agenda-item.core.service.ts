@@ -13,6 +13,8 @@ import { AgendaItemGetUnfinishedUseCase } from '../usecase/agenda-item.get-unfin
 import { AgendaItemCompleteUseCase } from '../usecase/agenda-item.complete.usecase';
 import { AgendaItemRescheduleUseCase } from '../usecase/agenda-item.reschedule.usecase';
 import { AgendaItemMarkUnfinishedUseCase } from '../usecase/agenda-item.mark-unfinished.usecase';
+import { AgendaItemFindAllUseCase } from '../usecase/agenda-item.find-all.usecase';
+import { AgendaGetEnrichedByDateUseCase } from '../usecase/agenda.get-enriched-by-date.usecase';
 
 @Injectable()
 export class AgendaItemCoreService {
@@ -29,6 +31,8 @@ export class AgendaItemCoreService {
     private readonly agendaItemCompleteUseCase: AgendaItemCompleteUseCase,
     private readonly agendaItemRescheduleUseCase: AgendaItemRescheduleUseCase,
     private readonly agendaItemMarkUnfinishedUseCase: AgendaItemMarkUnfinishedUseCase,
+    private readonly agendaItemFindAllUseCase: AgendaItemFindAllUseCase,
+    private readonly agendaGetEnrichedByDateUseCase: AgendaGetEnrichedByDateUseCase,
   ) {}
 
   async createAgendaItem(agendaId: string, data: AgendaItemCreateData) {
@@ -82,5 +86,20 @@ export class AgendaItemCoreService {
 
   async markAsUnfinished(id: string) {
     return this.agendaItemMarkUnfinishedUseCase.execute(id);
+  }
+
+  async findAgendaItems(params: {
+    startDate?: Date;
+    endDate?: Date;
+    query?: string;
+    mode?: 'all' | 'unfinished';
+    page?: number;
+    limit?: number;
+  }) {
+    return this.agendaItemFindAllUseCase.execute(params);
+  }
+
+  async getEnrichedAgendaByDate(date: Date) {
+    return this.agendaGetEnrichedByDateUseCase.execute(date);
   }
 }

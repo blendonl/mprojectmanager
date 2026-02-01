@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { AgendaItemEnriched } from '../../agenda/usecase/agenda.get-enriched-by-date.usecase';
+import { AgendaItemEnriched } from './agenda.get-enriched-by-date.usecase';
 
 @Injectable()
 export class AgendaItemGetOrphanedUseCase {
@@ -23,6 +23,9 @@ export class AgendaItemGetOrphanedUseCase {
           include: {
             routine: true,
           },
+        },
+        logs: {
+          orderBy: { createdAt: 'asc' },
         },
       },
     });

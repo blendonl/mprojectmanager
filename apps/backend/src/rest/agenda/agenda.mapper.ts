@@ -8,13 +8,17 @@ import {
 import {
   AgendaEnriched,
   AgendaItemEnriched,
-} from '../../core/agenda/usecase/agenda.get-enriched-by-date.usecase';
+} from '../../core/agenda-item/usecase/agenda.get-enriched-by-date.usecase';
 
 export class AgendaMapper {
+  private static toDateKey(date: Date): string {
+    return date.toISOString().split('T')[0];
+  }
+
   static toAgendaResponse(agenda: Agenda): AgendaDto {
     return {
       id: agenda.id,
-      date: agenda.date.toISOString(),
+      date: AgendaMapper.toDateKey(agenda.date),
       notes: null,
       createdAt: agenda.createdAt.toISOString(),
       updatedAt: agenda.updatedAt.toISOString(),
@@ -26,6 +30,9 @@ export class AgendaMapper {
   ): AgendaItemEnrichedDto {
     const routineTask = item.routineTask;
     const routine = routineTask?.routine;
+    const column = item.task?.column;
+    const board = column?.board;
+    const project = board?.project;
 
     return {
       id: item.id,
@@ -37,11 +44,19 @@ export class AgendaMapper {
       duration: item.duration,
       position: item.position,
       notes: item.notes,
-      completedAt: item.completedAt?.toISOString() || null,
       notificationId: item.notificationId,
+      logs: (item.logs || []).map((log) => ({
+        id: log.id,
+        agendaItemId: log.agendaItemId,
+        type: log.type as any,
+        previousValue: log.previousValue as Record<string, any> | null,
+        newValue: log.newValue as Record<string, any> | null,
+        notes: log.notes,
+        createdAt: log.createdAt.toISOString(),
+      })),
       createdAt: item.createdAt.toISOString(),
       updatedAt: item.updatedAt.toISOString(),
-      task: item.task
+          task: item.task
         ? {
             id: item.task.id,
             title: item.task.title,
@@ -51,9 +66,9 @@ export class AgendaMapper {
             columnId: item.task.columnId,
             boardId: item.task.column.boardId,
             projectId: item.task.column.board.projectId,
-            boardName: '',
-            projectName: '',
-            columnName: '',
+            boardName: board?.name ?? '',
+            projectName: project?.name ?? '',
+            columnName: column?.name ?? '',
             goalId: null,
           }
         : null,
@@ -100,7 +115,7 @@ export class AgendaMapper {
 
     return {
       id: agenda.id,
-      date: agenda.date.toISOString(),
+      date: AgendaMapper.toDateKey(agenda.date),
       notes: null,
       sleep,
       steps,

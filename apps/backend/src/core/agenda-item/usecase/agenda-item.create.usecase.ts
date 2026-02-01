@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { AgendaItem } from '@prisma/client';
 import { AgendaItemCreateData } from '../data/agenda-item.create.data';
 import {
   AGENDA_ITEM_REPOSITORY,
   type AgendaItemRepository,
+  type AgendaItemWithLogs,
 } from '../repository/agenda-item.repository';
 import {
   AGENDA_REPOSITORY,
@@ -19,7 +19,7 @@ export class AgendaItemCreateUseCase {
     private readonly agendaRepository: AgendaRepository,
   ) {}
 
-  async execute(agendaId: string, data: AgendaItemCreateData): Promise<AgendaItem> {
+  async execute(agendaId: string, data: AgendaItemCreateData): Promise<AgendaItemWithLogs> {
     let agenda = await this.agendaRepository.findById(agendaId);
 
     if (!agenda) {

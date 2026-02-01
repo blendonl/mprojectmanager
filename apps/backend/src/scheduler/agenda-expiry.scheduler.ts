@@ -32,7 +32,6 @@ export class AgendaExpiryScheduler {
             timestamp: new Date().toISOString(),
             metadata: {
               isUnfinished: true,
-              unfinishedAt: item.unfinishedAt?.toISOString(),
             },
           });
         });

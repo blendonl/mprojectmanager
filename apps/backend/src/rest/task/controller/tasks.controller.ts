@@ -25,6 +25,7 @@ import { TaskLogsCoreService } from 'src/core/task-logs/service/task-logs.core.s
 import { TaskMapper } from '../task.mapper';
 import { TaskLogMapper } from '../task-log.mapper';
 import { TaskFindOneResponse } from '../dto/task.find.one.response';
+import { TaskCreateResponse } from '../dto/task.create.response';
 
 @ApiTags('tasks')
 @Controller('tasks')
@@ -36,7 +37,9 @@ export class TasksController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new task' })
-  async create(@Body() body: TaskCreateRequest): Promise<TaskDto> {
+  async create(
+    @Body() body: TaskCreateRequest,
+  ): Promise<TaskCreateResponse> {
     const task = await this.tasksService.createTask({
       title: body.title,
       columnId: body.columnId,
@@ -51,7 +54,7 @@ export class TasksController {
       throw new NotFoundException('Column not found');
     }
 
-    return TaskMapper.toResponse(task);
+    return TaskCreateResponse.fromDomain(task);
   }
 
   @Get()

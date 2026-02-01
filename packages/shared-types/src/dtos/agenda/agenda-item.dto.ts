@@ -3,6 +3,19 @@ import { TaskPriorityType } from '../../enums/task-priority.enum';
 import { EntityTimestamps } from '../../types/common.types';
 
 /**
+ * Agenda item log entry
+ */
+export interface AgendaItemLogDto {
+  id: string;
+  agendaItemId: string;
+  type: 'COMPLETED' | 'UNCOMPLETED' | 'MARKED_UNFINISHED' | 'RESCHEDULED' | 'CREATED' | 'UPDATED' | 'DELETED';
+  previousValue: Record<string, any> | null;
+  newValue: Record<string, any> | null;
+  notes: string | null;
+  createdAt: string;
+}
+
+/**
  * Base agenda item DTO
  */
 export interface AgendaItemDto extends EntityTimestamps {
@@ -10,13 +23,13 @@ export interface AgendaItemDto extends EntityTimestamps {
   agendaId: string;
   taskId: string | null;
   routineTaskId: string | null;
-  startAt: string | null;  // ISO timestamp
+  startAt: string | null;
   duration: number | null;
   status: AgendaItemStatusType;
   position: number;
   notes: string | null;
-  completedAt: string | null;
   notificationId: string | null;
+  logs: AgendaItemLogDto[];
 }
 
 /**
@@ -104,5 +117,4 @@ export interface AgendaItemUpdateRequestDto {
   status?: AgendaItemStatusType;
   position?: number;
   notes?: string;
-  completedAt?: string;
 }

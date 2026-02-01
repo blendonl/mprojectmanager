@@ -2,12 +2,12 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   AGENDA_ITEM_REPOSITORY,
   type AgendaItemRepository,
+  type AgendaItemWithLogs,
 } from '../repository/agenda-item.repository';
 import {
   AGENDA_REPOSITORY,
   type AgendaRepository,
 } from '../../agenda/repository/agenda.repository';
-import { AgendaItem } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 
 @Injectable()
@@ -25,7 +25,7 @@ export class AgendaItemRescheduleUseCase {
     newDate: Date,
     startAt?: Date | null,
     duration?: number | null,
-  ): Promise<AgendaItem> {
+  ): Promise<AgendaItemWithLogs> {
     const item = await this.agendaItemRepository.findById(id);
     if (!item) {
       throw new Error('AgendaItem not found');
@@ -43,6 +43,7 @@ export class AgendaItemRescheduleUseCase {
         startAt: startAt !== undefined ? startAt : item.startAt,
         duration: duration !== undefined ? duration : item.duration,
       },
+      include: { logs: { orderBy: { createdAt: 'asc' } } },
     });
   }
 }

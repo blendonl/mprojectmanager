@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -10,9 +11,10 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AgendaDto, AgendaEnrichedDto } from 'shared-types';
+import { AgendaDto, AgendaFindAllResponse } from 'shared-types';
 import { AgendaCoreService } from 'src/core/agenda/service/agenda.core.service';
 import { AgendaCreateRequest } from '../dto/agenda.create.request';
+import { AgendaFindAllQueryRequest } from '../dto/agenda.find-all.query';
 import { AgendaUpdateRequest } from '../dto/agenda.update.request';
 import { AgendaMapper } from '../agenda.mapper';
 
@@ -31,53 +33,31 @@ export class AgendaController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'List all agendas' })
-  async list(): Promise<AgendaDto[]> {
-    const agendas = await this.agendaService.getAgendas();
-
-    return agendas.map(AgendaMapper.toAgendaResponse);
-  }
-
-  @Get('by-date')
-  @ApiOperation({ summary: 'Get agenda by date' })
-  async getByDate(@Query('date') date: string): Promise<AgendaDto | null> {
-    const agenda = await this.agendaService.getAgendaByDate(new Date(date));
-
-    console.log(agenda);
-
-    if (!agenda) {
-      return null;
+  @ApiOperation({ summary: 'List agendas by date range (paginated)' })
+  async list(
+    @Query() query: AgendaFindAllQueryRequest,
+  ): Promise<AgendaFindAllResponse> {
+    if (!query.startDate || !query.endDate) {
+      throw new BadRequestException('startDate and endDate are required');
     }
-    return AgendaMapper.toAgendaResponse(agenda);
-  }
 
-  @Get('by-date/enriched')
-  @ApiOperation({ summary: 'Get enriched agenda by date' })
-  async getEnrichedByDate(
-    @Query('date') date: string,
-  ): Promise<AgendaEnrichedDto | null> {
-    const agenda = await this.agendaService.getEnrichedAgendaByDate(
-      new Date(date),
-    );
-    if (!agenda) {
-      return null;
-    }
-    return AgendaMapper.toAgendaEnrichedResponse(agenda);
-  }
-
-  @Get('date-range')
-  @ApiOperation({ summary: 'Get agendas for date range' })
-  async getDateRange(
-    @Query('start') start: string,
-    @Query('end') end: string,
-  ): Promise<AgendaEnrichedDto[]> {
-    const agendas = await this.agendaService.getAgendasForDateRange(
-      new Date(start),
-      new Date(end),
+    const range = toDateRange(query.startDate, query.endDate);
+    const result = await this.agendaService.getAgendaSummaryForDateRange(
+      range.start,
+      range.end,
+      query.page ?? 1,
+      query.limit ?? 50,
     );
 
-    console.dir(agendas, { depth: null });
-    return agendas.map(AgendaMapper.toAgendaEnrichedResponse);
+    return {
+      items: result.items.map((item) => ({
+        date: item.date.toISOString().split('T')[0],
+        agendaItemsTotal: item.agendaItemsTotal,
+      })),
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+    };
   }
 
   @Get(':agendaId')
@@ -110,3 +90,9 @@ export class AgendaController {
     return { deleted: true };
   }
 }
+
+const toDateRange = (startDate: string, endDate: string) => {
+  const start = new Date(`${startDate}T00:00:00.000Z`);
+  const end = new Date(`${endDate}T23:59:59.999Z`);
+  return { start, end };
+};

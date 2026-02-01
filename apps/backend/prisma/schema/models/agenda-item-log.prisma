@@ -1,0 +1,28 @@
+enum AgendaItemLogType {
+  COMPLETED
+  UNCOMPLETED
+  MARKED_UNFINISHED
+  RESCHEDULED
+  CREATED
+  UPDATED
+  DELETED
+
+  @@map("agenda_item_log_type")
+}
+
+model AgendaItemLog {
+  id            String   @id @default(uuid())
+  agendaItemId  String   @map("agenda_item_id")
+  type          AgendaItemLogType
+  previousValue Json?    @map("previous_value")
+  newValue      Json?    @map("new_value")
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  agendaItem AgendaItem @relation(fields: [agendaItemId], references: [id], onDelete: Cascade)
+
+  @@index([agendaItemId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("agenda_item_log")
+}

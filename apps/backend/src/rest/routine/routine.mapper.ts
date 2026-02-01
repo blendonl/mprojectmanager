@@ -4,14 +4,20 @@ import { RoutineDetailDto } from 'shared-types';
 export class RoutineMapper {
   static toResponse(data: RoutineWithTasks): RoutineDetailDto {
     const { routine, tasks } = data;
+    const target = routine.target as unknown as RoutineDetailDto['target'];
+
     return {
       id: routine.id,
       name: routine.name,
       description: null,
-      routineType: routine.type as any,
-      target: routine.target ? parseInt(routine.target as string) : null,
-      color: '#000000',
+      type: routine.type as any,
+      target,
+      separateInto: routine.separateInto,
+      repeatIntervalMinutes: routine.repeatIntervalMinutes,
+      activeDays: routine.activeDays as string[] | null,
+      status: routine.status as any,
       isActive: routine.status === 'ACTIVE',
+      color: '#000000',
       createdAt: routine.createdAt.toISOString(),
       updatedAt: routine.updatedAt.toISOString(),
       tasks: tasks.map((task) => ({
@@ -19,6 +25,7 @@ export class RoutineMapper {
         routineId: task.routineId,
         name: task.name,
         description: null,
+        target: task.target,
         duration: null,
         position: 0,
         createdAt: task.createdAt.toISOString(),

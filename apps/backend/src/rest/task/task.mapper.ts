@@ -1,4 +1,5 @@
 import { TaskDto, TaskPriority, TaskStatus, TaskType } from 'shared-types';
+import { ColumnMapper } from '../column/column.mapper';
 
 export class TaskMapper {
   static toResponse(task: any): TaskDto {
@@ -21,6 +22,7 @@ export class TaskMapper {
       actualMinutes: null,
       filePath: null,
       completedAt: null,
+      column: ColumnMapper.toResponse(task.column),
       createdAt: task.createdAt
         ? task.createdAt.toISOString()
         : new Date().toISOString(),

@@ -30,6 +30,23 @@ export interface TaskDto extends EntityTimestamps {
 }
 
 /**
+ * Task create response (no nested column)
+ */
+export interface TaskCreateResponseDto extends EntityTimestamps {
+  id: string;
+  slug: string;
+  taskNumber: number;
+  title: string;
+  description: string | null;
+  taskType: TaskType;
+  priority: TaskPriorityType;
+  columnId: string;
+  parentId: string | null;
+  position: number;
+  dueDate: string | null; // YYYY-MM-DD
+}
+
+/**
  * Task with context (board, project names)
  */
 export interface TaskDetailDto extends TaskDto {

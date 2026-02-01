@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AgendaItem } from '@prisma/client';
+import { AgendaItem, AgendaItemStatus, AgendaItemLogType } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { AgendaItemLogCreateUseCase } from './agenda-item-log.create.usecase';
 
 export interface MarkExpiredResult {
   markedCount: number;
@@ -13,7 +14,10 @@ export class AgendaItemMarkExpiredUnfinishedUseCase {
     AgendaItemMarkExpiredUnfinishedUseCase.name,
   );
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly logUseCase: AgendaItemLogCreateUseCase,
+  ) {}
 
   async execute(): Promise<MarkExpiredResult> {
     try {
@@ -21,11 +25,11 @@ export class AgendaItemMarkExpiredUnfinishedUseCase {
 
       const expiredItems = await this.prisma.agendaItem.findMany({
         where: {
-          completedAt: null,
-          isUnfinished: false,
+          status: AgendaItemStatus.PENDING,
           startAt: { not: null },
           duration: { not: null },
         },
+        include: { logs: { orderBy: { createdAt: 'asc' } } },
       });
 
       const itemsToMark = expiredItems.filter((item) => {
@@ -49,15 +53,25 @@ export class AgendaItemMarkExpiredUnfinishedUseCase {
       );
 
       const markedItems = await Promise.all(
-        itemsToMark.map((item) =>
-          this.prisma.agendaItem.update({
+        itemsToMark.map(async (item) => {
+          const updated = await this.prisma.agendaItem.update({
             where: { id: item.id },
             data: {
-              isUnfinished: true,
-              unfinishedAt: new Date(),
+              status: AgendaItemStatus.UNFINISHED,
             },
-          }),
-        ),
+            include: { logs: { orderBy: { createdAt: 'asc' } } },
+          });
+
+          await this.logUseCase.execute({
+            agendaItemId: item.id,
+            type: AgendaItemLogType.MARKED_UNFINISHED,
+            previousValue: { status: item.status },
+            newValue: { status: AgendaItemStatus.UNFINISHED, markedAt: now },
+            notes: 'Automatically marked as unfinished due to expiration',
+          });
+
+          return updated;
+        }),
       );
 
       this.logger.log(

@@ -11,7 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AgendaItemDto, AgendaItemEnrichedDto } from 'shared-types';
+import { AgendaItemDto, AgendaItemEnrichedDto, AgendaItemsFindAllResponse } from 'shared-types';
 import { AgendaItemCoreService } from 'src/core/agenda-item/service/agenda-item.core.service';
 import { AgendaItemCreateRequest } from '../dto/agenda-item.create.request';
 import { AgendaItemUpdateRequest } from '../dto/agenda-item.update.request';
@@ -19,6 +19,7 @@ import { AgendaItemMapper } from '../agenda-item.mapper';
 import { AgendaMapper } from '../../agenda/agenda.mapper';
 import { AgendaItemCompleteRequest } from '../dto/agenda-item-complete.request';
 import { AgendaItemRescheduleRequest } from '../dto/agenda-item-reschedule.request';
+import { AgendaItemListQueryRequest } from '../dto/agenda-item.list.query.request';
 
 @ApiTags('agenda-items')
 @Controller('agendas/:agendaId/items')
@@ -163,10 +164,52 @@ export class AgendaItemGlobalController {
   constructor(private readonly agendaItemService: AgendaItemCoreService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get all unfinished agenda items' })
-  async getAll(): Promise<AgendaItemEnrichedDto[]> {
-    const items = await this.agendaItemService.getUnfinishedAgendaItems();
-    return items.map(AgendaMapper.toAgendaItemEnrichedResponse);
+  @ApiOperation({ summary: 'List agenda items' })
+  async getAll(
+    @Query() query: AgendaItemListQueryRequest,
+  ): Promise<AgendaItemsFindAllResponse> {
+    if ((query.startDate && !query.endDate) || (!query.startDate && query.endDate)) {
+      throw new BadRequestException('startDate and endDate are required together');
+    }
+
+    const range = query.startDate && query.endDate
+      ? toDateRange(query.startDate, query.endDate)
+      : undefined;
+
+    const result = await this.agendaItemService.findAgendaItems({
+      startDate: range?.start,
+      endDate: range?.end,
+      query: query.q,
+      mode: query.mode,
+      page: query.page,
+      limit: query.limit,
+    });
+
+    return {
+      items: result.items.map((agenda) => {
+        const enriched = AgendaMapper.toAgendaEnrichedResponse(agenda as any);
+        const allItems = [
+          ...enriched.tasks,
+          ...enriched.routines,
+          ...enriched.steps,
+          ...(enriched.sleep.sleep ? [enriched.sleep.sleep] : []),
+          ...(enriched.sleep.wakeup ? [enriched.sleep.wakeup] : []),
+        ];
+        const unfinished = allItems.filter((item) => item.status === 'UNFINISHED');
+        return {
+          date: enriched.date,
+          agendaItemsTotal: allItems.length,
+          sleep: enriched.sleep,
+          steps: enriched.steps,
+          routines: enriched.routines,
+          tasks: enriched.tasks,
+          unfinished,
+        };
+      }),
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+    };
   }
 
   @Get('orphaned')
@@ -202,3 +245,9 @@ export class AgendaItemGlobalController {
     return items.map(AgendaMapper.toAgendaItemEnrichedResponse);
   }
 }
+
+const toDateRange = (startDate: string, endDate: string) => {
+  const start = new Date(`${startDate}T00:00:00.000Z`);
+  const end = new Date(`${endDate}T23:59:59.999Z`);
+  return { start, end };
+};

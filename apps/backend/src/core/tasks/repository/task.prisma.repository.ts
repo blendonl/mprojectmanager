@@ -96,6 +96,17 @@ export class TaskPrismaRepository implements TaskRepository {
         orderBy: { position: 'asc' },
         skip,
         take: query.limit,
+        include: {
+          column: {
+            include: {
+              board: {
+                include: {
+                  project: true,
+                },
+              },
+            },
+          },
+        },
       }),
       this.prisma.task.count({ where }),
     ]);

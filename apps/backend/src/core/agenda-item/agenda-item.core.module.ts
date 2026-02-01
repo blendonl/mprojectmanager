@@ -20,6 +20,9 @@ import { AgendaItemRescheduleUseCase } from './usecase/agenda-item.reschedule.us
 import { AgendaItemMarkUnfinishedUseCase } from './usecase/agenda-item.mark-unfinished.usecase';
 import { AgendaItemMarkExpiredUnfinishedUseCase } from './usecase/agenda-item.mark-expired-unfinished.usecase';
 import { AgendaCoreModule } from '../agenda/agenda.core.module';
+import { AgendaItemFindAllUseCase } from './usecase/agenda-item.find-all.usecase';
+import { AgendaItemLogCreateUseCase } from './usecase/agenda-item-log.create.usecase';
+import { AgendaGetEnrichedByDateUseCase } from './usecase/agenda.get-enriched-by-date.usecase';
 
 @Module({
   imports: [PrismaModule, AgendaCoreModule],
@@ -45,8 +48,11 @@ import { AgendaCoreModule } from '../agenda/agenda.core.module';
     AgendaItemRescheduleUseCase,
     AgendaItemMarkUnfinishedUseCase,
     AgendaItemMarkExpiredUnfinishedUseCase,
+    AgendaItemFindAllUseCase,
+    AgendaItemLogCreateUseCase,
+    AgendaGetEnrichedByDateUseCase,
     AgendaItemCoreService,
   ],
-  exports: [AgendaItemCoreService, AgendaItemMarkExpiredUnfinishedUseCase],
+  exports: [AgendaItemCoreService, AgendaItemMarkExpiredUnfinishedUseCase, AGENDA_ITEM_REPOSITORY],
 })
 export class AgendaItemCoreModule {}

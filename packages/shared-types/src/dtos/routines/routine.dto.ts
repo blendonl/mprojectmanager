@@ -1,5 +1,8 @@
 import { EntityTimestamps } from '../../types/common.types';
 
+export type RoutineType = 'SLEEP' | 'STEP' | 'OTHER';
+export type RoutineStatus = 'ACTIVE' | 'DISABLED';
+
 /**
  * Routine DTO
  */
@@ -7,10 +10,14 @@ export interface RoutineDto extends EntityTimestamps {
   id: string;
   name: string;
   description: string | null;
-  routineType: 'SLEEP' | 'STEP' | 'OTHER';
-  target: number | null;
-  color: string;
+  type: RoutineType;
+  target: string;
+  separateInto: number;
+  repeatIntervalMinutes: number;
+  activeDays: string[] | null;
+  status: RoutineStatus;
   isActive: boolean;
+  color: string | null;
 }
 
 /**
@@ -21,8 +28,9 @@ export interface RoutineTaskDto extends EntityTimestamps {
   routineId: string;
   name: string;
   description: string | null;
+  target: string;
   duration: number | null;
-  position: number;
+  position: number | null;
 }
 
 /**
@@ -37,10 +45,11 @@ export interface RoutineDetailDto extends RoutineDto {
  */
 export interface RoutineCreateRequestDto {
   name: string;
-  description?: string;
-  routineType: 'SLEEP' | 'STEP' | 'OTHER';
-  target?: number;
-  color?: string;
+  type: RoutineType;
+  target: string;
+  separateInto?: number;
+  repeatIntervalMinutes: number;
+  activeDays?: string[];
 }
 
 /**
@@ -48,11 +57,12 @@ export interface RoutineCreateRequestDto {
  */
 export interface RoutineUpdateRequestDto {
   name?: string;
-  description?: string;
-  routineType?: 'SLEEP' | 'STEP' | 'OTHER';
-  target?: number;
-  color?: string;
-  isActive?: boolean;
+  status?: RoutineStatus;
+  type?: RoutineType;
+  target?: string;
+  separateInto?: number;
+  repeatIntervalMinutes?: number;
+  activeDays?: string[] | null;
 }
 
 /**

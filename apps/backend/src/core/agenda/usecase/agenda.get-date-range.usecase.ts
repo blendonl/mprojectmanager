@@ -4,7 +4,7 @@ import {
   type AgendaRepository,
 } from '../repository/agenda.repository';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { AgendaEnriched } from './agenda.get-enriched-by-date.usecase';
+import { AgendaEnriched } from '../../agenda-item/usecase/agenda.get-enriched-by-date.usecase';
 
 @Injectable()
 export class AgendaGetDateRangeUseCase {
