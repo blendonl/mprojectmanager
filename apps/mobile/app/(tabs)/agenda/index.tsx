@@ -907,6 +907,7 @@ const styles = StyleSheet.create({
     borderColor: theme.border.primary,
   },
   calendarTitleRow: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
@@ -926,7 +927,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   viewToggleButton: {
-    marginTop: spacing.xs,
+    marginTop: 0,
     width: 28,
     height: 28,
     borderRadius: 14,
