@@ -14,7 +14,7 @@ import { spacing } from '../theme/spacing';
 import { ProjectId, BoardId, TaskId } from '../../core/types';
 import { getBoardService } from '../../core/di/hooks';
 import { projectApi } from '../../features/projects/api/projectApi';
-import { BoardDto, ProjectDto, TaskDto } from 'shared-types';
+import { BoardDto, EntityType, ProjectDto, TaskDto } from 'shared-types';
 import AppIcon, { AppIconName } from './icons/AppIcon';
 
 type Tab = 'projects' | 'boards' | 'tasks';
@@ -25,8 +25,6 @@ interface Entity {
   type: EntityType;
 }
 
-type EntityType = 'project' | 'board' | 'task';
-
 type BoardWithColumns = BoardDto & {
   columns?: { tasks: TaskDto[] }[];
 };
@@ -34,13 +32,13 @@ type BoardWithColumns = BoardDto & {
 interface EntityPickerProps {
   visible: boolean;
   onClose: () => void;
-  selectedProjects: ProjectId[];
-  selectedBoards: BoardId[];
-  selectedTasks: TaskId[];
+  selectedProjects: ProjectDto[];
+  selectedBoards: BoardDto[];
+  selectedTasks: TaskDto[];
   onSelectionChange: (
-    projects: ProjectId[],
-    boards: BoardId[],
-    tasks: TaskId[]
+    projects: ProjectDto[],
+    boards: BoardDto[],
+    tasks: TaskDto[]
   ) => void;
 }
 
@@ -69,9 +67,9 @@ export default function EntityPicker({
   useEffect(() => {
     if (visible) {
       loadData();
-      setLocalSelectedProjects(selectedProjects);
-      setLocalSelectedBoards(selectedBoards);
-      setLocalSelectedTasks(selectedTasks);
+      setLocalSelectedProjects(selectedProjects.map((project) => project.id));
+      setLocalSelectedBoards(selectedBoards.map((board) => board.id));
+      setLocalSelectedTasks(selectedTasks.map((task) => task.id));
     }
   }, [visible]);
 
@@ -126,7 +124,16 @@ export default function EntityPicker({
   };
 
   const handleDone = () => {
-    onSelectionChange(localSelectedProjects, localSelectedBoards, localSelectedTasks);
+    const selectedProjectObjects = projects.filter((project) =>
+      localSelectedProjects.includes(project.id),
+    );
+    const selectedBoardObjects = boards.filter((board) =>
+      localSelectedBoards.includes(board.id),
+    );
+    const selectedTaskObjects = tasks.filter((task) =>
+      localSelectedTasks.includes(task.id),
+    );
+    onSelectionChange(selectedProjectObjects, selectedBoardObjects, selectedTaskObjects);
     onClose();
   };
 
@@ -163,21 +170,21 @@ export default function EntityPicker({
         entities = projects.map(p => ({
           id: p.id,
           name: p.name,
-          type: 'project' as EntityType,
+          type: EntityType.Project,
         }));
         break;
       case 'boards':
         entities = boards.map(b => ({
           id: b.id,
           name: b.name,
-          type: 'board' as EntityType,
+          type: EntityType.Board,
         }));
         break;
       case 'tasks':
         entities = tasks.map(t => ({
           id: t.id,
           name: t.title,
-          type: 'task' as EntityType,
+          type: EntityType.Task,
         }));
         break;
     }
@@ -191,11 +198,11 @@ export default function EntityPicker({
 
   const isSelected = (entity: Entity): boolean => {
     switch (entity.type) {
-      case 'project':
+      case EntityType.Project:
         return localSelectedProjects.includes(entity.id);
-      case 'board':
+      case EntityType.Board:
         return localSelectedBoards.includes(entity.id);
-      case 'task':
+      case EntityType.Task:
         return localSelectedTasks.includes(entity.id);
       default:
         return false;
@@ -204,13 +211,13 @@ export default function EntityPicker({
 
   const toggleEntity = (entity: Entity) => {
     switch (entity.type) {
-      case 'project':
+      case EntityType.Project:
         toggleProject(entity.id);
         break;
-      case 'board':
+      case EntityType.Board:
         toggleBoard(entity.id);
         break;
-      case 'task':
+      case EntityType.Task:
         toggleTask(entity.id);
         break;
     }
@@ -218,7 +225,12 @@ export default function EntityPicker({
 
   const renderEntityItem = ({ item }: { item: Entity }) => {
     const selected = isSelected(item);
-    const icon: AppIconName = item.type === 'project' ? 'folder' : item.type === 'board' ? 'board' : 'check';
+    const icon: AppIconName =
+      item.type === EntityType.Project
+        ? 'folder'
+        : item.type === EntityType.Board
+          ? 'board'
+          : 'check';
 
     return (
       <TouchableOpacity

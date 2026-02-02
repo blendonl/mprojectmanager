@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import theme from '../theme/colors';
 import { spacing } from '../theme/spacing';
-import { EntityType } from '../../domain/entities/Note';
+import { EntityType } from 'shared-types';
 import AppIcon, { AppIconName } from './icons/AppIcon';
 
 interface EntityChipProps {
@@ -15,9 +15,9 @@ interface EntityChipProps {
 }
 
 const ENTITY_CONFIG: Record<EntityType, { icon: AppIconName; color: string }> = {
-  project: { icon: 'folder', color: theme.accent.primary },
-  board: { icon: 'board', color: theme.accent.secondary },
-  task: { icon: 'check', color: theme.accent.success },
+  [EntityType.Project]: { icon: 'folder', color: theme.accent.primary },
+  [EntityType.Board]: { icon: 'board', color: theme.accent.secondary },
+  [EntityType.Task]: { icon: 'check', color: theme.accent.success },
 };
 
 export default function EntityChip({
