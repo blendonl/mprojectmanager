@@ -3,12 +3,12 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import theme from '@shared/theme/colors';
 import { spacing } from '@shared/theme/spacing';
 import EntityChip from '@shared/components/EntityChip';
-import { ProjectId, BoardId, TaskId } from '@core/types';
+import { EntityType, BoardDto, ProjectDto, TaskDto } from 'shared-types';
 
 interface NoteEntitiesSectionProps {
-  selectedProjects: ProjectId[];
-  selectedBoards: BoardId[];
-  selectedTasks: TaskId[];
+  selectedProjects: ProjectDto[];
+  selectedBoards: BoardDto[];
+  selectedTasks: TaskDto[];
   entityNames: {
     projects: Map<string, string>;
     boards: Map<string, string>;
@@ -34,30 +34,30 @@ export const NoteEntitiesSection: React.FC<NoteEntitiesSectionProps> = ({
     <View style={styles.entitiesSection}>
       <Text style={styles.sectionLabel}>Connected To</Text>
       <View style={styles.entityChipsContainer}>
-        {selectedProjects.map(id => (
+        {selectedProjects.map((project) => (
           <EntityChip
-            key={id}
-            entityType="project"
-            entityId={id}
-            entityName={entityNames.projects.get(id) || id}
+            key={project.id}
+            entityType={EntityType.Project}
+            entityId={project.id}
+            entityName={project.name || entityNames.projects.get(project.id) || project.id}
             onRemove={onRemoveProject}
           />
         ))}
-        {selectedBoards.map(id => (
+        {selectedBoards.map((board) => (
           <EntityChip
-            key={id}
-            entityType="board"
-            entityId={id}
-            entityName={entityNames.boards.get(id) || id}
+            key={board.id}
+            entityType={EntityType.Board}
+            entityId={board.id}
+            entityName={board.name || entityNames.boards.get(board.id) || board.id}
             onRemove={onRemoveBoard}
           />
         ))}
-        {selectedTasks.map(id => (
+        {selectedTasks.map((task) => (
           <EntityChip
-            key={id}
-            entityType="task"
-            entityId={id}
-            entityName={entityNames.tasks.get(id) || id}
+            key={task.id}
+            entityType={EntityType.Task}
+            entityId={task.id}
+            entityName={task.title || entityNames.tasks.get(task.id) || task.id}
             onRemove={onRemoveTask}
           />
         ))}

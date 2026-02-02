@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { projectApi } from '@features/projects/api/projectApi';
-import { NoteDetailDto } from 'shared-types';
+import { useMemo } from 'react';
+import { BoardDto, NoteDetailDto, ProjectDto, TaskDto } from 'shared-types';
 
 interface EntityNames {
   projects: Map<string, string>;
@@ -10,80 +9,48 @@ interface EntityNames {
 
 interface UseEntityNamesOptions {
   notes?: NoteDetailDto[];
-  projectIds?: string[];
-  boardIds?: string[];
-  taskIds?: string[];
+  projects?: ProjectDto[];
+  boards?: BoardDto[];
+  tasks?: TaskDto[];
 }
 
-const EMPTY_IDS: string[] = [];
-
 export const useEntityNames = (options: UseEntityNamesOptions = {}) => {
-  const { notes, projectIds = EMPTY_IDS, boardIds = EMPTY_IDS, taskIds = EMPTY_IDS } = options;
+  const { notes, projects = [], boards = [], tasks = [] } = options;
 
-  const [entityNames, setEntityNames] = useState<EntityNames>({
-    projects: new Map(),
-    boards: new Map(),
-    tasks: new Map(),
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const entityNames = useMemo<EntityNames>(() => {
+    const projectNames = new Map<string, string>();
+    const boardNames = new Map<string, string>();
+    const taskNames = new Map<string, string>();
 
-  const loadEntityNames = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    notes?.forEach((note) => {
+      note.projects?.forEach((project) => {
+        projectNames.set(project.id, project.name);
+      });
+      note.boards?.forEach((board) => {
+        boardNames.set(board.id, board.name);
+      });
+      note.tasks?.forEach((task) => {
+        taskNames.set(task.id, task.title);
+      });
+    });
 
-    try {
-      const newEntityNames: EntityNames = {
-        projects: new Map(),
-        boards: new Map(),
-        tasks: new Map(),
-      };
+    projects.forEach((project) => {
+      projectNames.set(project.id, project.name);
+    });
+    boards.forEach((board) => {
+      boardNames.set(board.id, board.name);
+    });
+    tasks.forEach((task) => {
+      taskNames.set(task.id, task.title);
+    });
 
-      const allProjectIds = new Set<string>();
-      const allBoardIds = new Set<string>();
-      const allTaskIds = new Set<string>();
-
-      if (notes) {
-        notes.forEach(note => {
-          note.projectIds?.forEach(id => allProjectIds.add(id));
-          note.boardIds?.forEach(id => allBoardIds.add(id));
-          note.taskIds?.forEach(id => allTaskIds.add(id));
-        });
-      }
-
-      projectIds.forEach(id => allProjectIds.add(id));
-      boardIds.forEach(id => allBoardIds.add(id));
-      taskIds.forEach(id => allTaskIds.add(id));
-
-      for (const projectId of allProjectIds) {
-        try {
-          const project = await projectApi.getProjectById(projectId);
-          if (project) newEntityNames.projects.set(projectId, project.name);
-        } catch (e) {
-        }
-      }
-
-      setEntityNames(newEntityNames);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to load entity names'));
-    } finally {
-      setLoading(false);
-    }
-  }, [notes, projectIds, boardIds, taskIds]);
-
-  useEffect(() => {
-    const hasNotes = !!notes && notes.length > 0;
-    const hasIds = projectIds.length > 0 || boardIds.length > 0 || taskIds.length > 0;
-
-    if (hasNotes || hasIds) {
-      loadEntityNames();
-    }
-  }, [loadEntityNames, notes, projectIds.length, boardIds.length, taskIds.length]);
+    return { projects: projectNames, boards: boardNames, tasks: taskNames };
+  }, [notes, projects, boards, tasks]);
 
   return {
     entityNames,
-    loading,
-    error,
-    reload: loadEntityNames,
+    loading: false,
+    error: null,
+    reload: () => undefined,
   };
 };

@@ -2,14 +2,15 @@ import React from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import theme from '@shared/theme';
 import { spacing } from '@shared/theme/spacing';
-import { NoteType } from '@features/notes/domain/entities/Note';
+import { NoteType } from 'shared-types';
 import AppIcon, { AppIconName } from '@shared/components/icons/AppIcon';
 
 const NOTE_TYPE_FILTERS: { value: NoteType | 'all'; label: string; icon: AppIconName }[] = [
   { value: 'all', label: 'All', icon: 'stack' },
-  { value: 'general', label: 'Notes', icon: 'note' },
-  { value: 'meeting', label: 'Meetings', icon: 'users' },
-  { value: 'daily', label: 'Daily', icon: 'calendar' },
+  { value: NoteType.General, label: 'Notes', icon: 'note' },
+  { value: NoteType.Meeting, label: 'Meetings', icon: 'users' },
+  { value: NoteType.Daily, label: 'Daily', icon: 'calendar' },
+  { value: NoteType.Task, label: 'Tasks', icon: 'check' },
 ];
 
 interface NoteFiltersProps {

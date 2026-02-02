@@ -1,18 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useDebounce } from '@shared/hooks/useDebounce';
 import { uiConstants } from '@shared/theme/uiConstants';
-import { noteApi } from '../api/noteApi';
-import { NoteDetailDto } from 'shared-types';
+import { getNoteService } from '@core/di/hooks';
+import { BoardDto, NoteDetailDto, NoteType, ProjectDto, TaskDto } from 'shared-types';
 import { SaveStatus } from '@shared/components/AutoSaveIndicator';
 
 interface NoteData {
+  type?: NoteType;
   title: string;
   content: string;
   tags: string[];
-  projectIds: string[];
-  boardIds: string[];
-  taskIds: string[];
-  noteType?: string;
+  projects: ProjectDto[];
+  boards: BoardDto[];
+  tasks: TaskDto[];
 }
 
 interface UseNoteAutoSaveOptions {
@@ -34,26 +34,28 @@ export const useNoteAutoSave = ({ note, noteData, onNoteSaved }: UseNoteAutoSave
 
     setSaveStatus('saving');
     try {
+      const noteService = getNoteService();
       if (note) {
-        await noteApi.updateNote(note.id, {
+        await noteService.updateNote(note.id, {
           title: noteData.title.trim(),
           content: noteData.content,
           tags: noteData.tags,
-          projectIds: noteData.projectIds,
-          boardIds: noteData.boardIds,
-          taskIds: noteData.taskIds,
+          projects: noteData.projects,
+          boards: noteData.boards,
+          tasks: noteData.tasks,
+          type: noteData.type,
         });
       } else {
-        const newNoteDto = await noteApi.createNote({
+        const newNoteDto = await noteService.createNote({
           title: noteData.title.trim(),
           content: noteData.content,
-          noteType: noteData.noteType || 'general',
-          projectIds: noteData.projectIds,
-          boardIds: noteData.boardIds,
-          taskIds: noteData.taskIds,
+          type: noteData.type ?? NoteType.General,
+          projects: noteData.projects,
+          boards: noteData.boards,
+          tasks: noteData.tasks,
           tags: noteData.tags,
         });
-        const fullNote = await noteApi.getNoteById(newNoteDto.id);
+        const fullNote = await noteService.getNoteById(newNoteDto.id);
         if (fullNote) {
           onNoteSaved?.(fullNote);
         }
@@ -82,9 +84,10 @@ export const useNoteAutoSave = ({ note, noteData, onNoteSaved }: UseNoteAutoSave
     debouncedTitle,
     debouncedContent,
     debouncedTags,
-    noteData.projectIds,
-    noteData.boardIds,
-    noteData.taskIds,
+    noteData.projects,
+    noteData.boards,
+    noteData.tasks,
+    noteData.type,
   ]);
 
   return {

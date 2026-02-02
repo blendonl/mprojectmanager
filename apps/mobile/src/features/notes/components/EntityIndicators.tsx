@@ -2,11 +2,11 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import theme from '@shared/theme';
 import { spacing } from '@shared/theme/spacing';
-import { Note } from '@features/notes/domain/entities/Note';
+import { NoteDetailDto } from 'shared-types';
 import AppIcon, { AppIconName } from '@shared/components/icons/AppIcon';
 
 interface EntityIndicatorsProps {
-  note: Note;
+  note: NoteDetailDto;
   entityNames: {
     projects: Map<string, string>;
     boards: Map<string, string>;
@@ -16,23 +16,26 @@ interface EntityIndicatorsProps {
 
 export const EntityIndicators: React.FC<EntityIndicatorsProps> = ({ note, entityNames }) => {
   const entities: { icon: AppIconName; name: string }[] = [];
+  const projects = note.projects ?? [];
+  const boards = note.boards ?? [];
+  const tasks = note.tasks ?? [];
 
-  note.project_ids.slice(0, 1).forEach(id => {
-    const name = entityNames.projects.get(id) || id;
+  projects.slice(0, 1).forEach((project) => {
+    const name = project.name || entityNames.projects.get(project.id) || project.id;
     entities.push({ icon: 'folder' as AppIconName, name });
   });
 
-  note.board_ids.slice(0, 1).forEach(id => {
-    const name = entityNames.boards.get(id) || id;
+  boards.slice(0, 1).forEach((board) => {
+    const name = board.name || entityNames.boards.get(board.id) || board.id;
     entities.push({ icon: 'board' as AppIconName, name });
   });
 
-  const taskCount = note.task_ids.length;
+  const taskCount = tasks.length;
   if (taskCount > 0) {
     entities.push({ icon: 'check', name: `${taskCount} task${taskCount > 1 ? 's' : ''}` });
   }
 
-  const totalEntities = note.project_ids.length + note.board_ids.length + note.task_ids.length;
+  const totalEntities = projects.length + boards.length + tasks.length;
   const showing = entities.length;
   const remaining = totalEntities - showing;
 

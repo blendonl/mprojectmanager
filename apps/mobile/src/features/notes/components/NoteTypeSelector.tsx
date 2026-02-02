@@ -2,13 +2,14 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import theme from '@shared/theme/colors';
 import { spacing } from '@shared/theme/spacing';
-import { NoteType } from '@features/notes/domain/entities/Note';
+import { NoteType } from 'shared-types';
 import AppIcon, { AppIconName } from '@shared/components/icons/AppIcon';
 
 const NOTE_TYPES: { value: NoteType; label: string; icon: AppIconName }[] = [
-  { value: 'general', label: 'Note', icon: 'note' },
-  { value: 'meeting', label: 'Meeting', icon: 'users' },
-  { value: 'daily', label: 'Daily', icon: 'calendar' },
+  { value: NoteType.General, label: 'Note', icon: 'note' },
+  { value: NoteType.Meeting, label: 'Meeting', icon: 'users' },
+  { value: NoteType.Daily, label: 'Daily', icon: 'calendar' },
+  { value: NoteType.Task, label: 'Task', icon: 'check' },
 ];
 
 interface NoteTypeSelectorProps {

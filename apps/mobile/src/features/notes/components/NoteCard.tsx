@@ -3,35 +3,36 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import theme from '@shared/theme';
 import { spacing } from '@shared/theme/spacing';
-import { Note, NoteType } from '@features/notes/domain/entities/Note';
+import { NoteDetailDto, NoteType } from 'shared-types';
 import AppIcon, { AppIconName } from '@shared/components/icons/AppIcon';
 import { EntityIndicators } from './EntityIndicators';
 
 const NOTE_TYPE_ICONS: Record<NoteType, AppIconName> = {
-  general: 'note',
-  meeting: 'users',
-  daily: 'calendar',
-  task: 'check',
+  [NoteType.General]: 'note',
+  [NoteType.Meeting]: 'users',
+  [NoteType.Daily]: 'calendar',
+  [NoteType.Task]: 'check',
 };
 
 const NOTE_TYPE_LABELS: Record<NoteType, string> = {
-  general: 'Note',
-  meeting: 'Meeting',
-  daily: 'Daily',
-  task: 'Task',
+  [NoteType.General]: 'Note',
+  [NoteType.Meeting]: 'Meeting',
+  [NoteType.Daily]: 'Daily',
+  [NoteType.Task]: 'Task',
 };
 
 interface NoteCardProps {
-  note: Note;
+  note: NoteDetailDto;
   entityNames: {
     projects: Map<string, string>;
     boards: Map<string, string>;
     tasks: Map<string, string>;
   };
-  onPress?: (note: Note) => void;
+  onPress?: (note: NoteDetailDto) => void;
 }
 
-const formatDate = (date: Date): string => {
+const formatDate = (value: string | Date): string => {
+  const date = value instanceof Date ? value : new Date(value);
   const now = new Date();
   const diff = now.getTime() - date.getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -48,7 +49,11 @@ const formatDate = (date: Date): string => {
 
 export const NoteCard = React.memo<NoteCardProps>(({ note, entityNames, onPress }) => {
   const router = useRouter();
-  const icon = NOTE_TYPE_ICONS[note.note_type];
+  const noteType = note.type ?? NoteType.General;
+  const icon = NOTE_TYPE_ICONS[noteType];
+  const tags = note.tags ?? [];
+  const preview = note.preview ?? (note.content ? note.content.slice(0, 160) : null);
+  const wordCount = note.wordCount ?? note.content.trim().split(/\s+/).filter(Boolean).length;
   const handlePress = useCallback(() => {
     if (onPress) {
       onPress(note);
@@ -70,23 +75,23 @@ export const NoteCard = React.memo<NoteCardProps>(({ note, entityNames, onPress 
         <View style={styles.noteBody}>
           <View style={styles.noteHeader}>
             <Text style={styles.noteTitle} numberOfLines={1}>{note.title}</Text>
-            <Text style={styles.noteDate}>{formatDate(note.updated_at)}</Text>
+            <Text style={styles.noteDate}>{formatDate(note.updatedAt)}</Text>
           </View>
-          {note.preview && (
-            <Text style={styles.notePreview} numberOfLines={3}>{note.preview}</Text>
+          {preview && (
+            <Text style={styles.notePreview} numberOfLines={3}>{preview}</Text>
           )}
           <EntityIndicators note={note} entityNames={entityNames} />
           <View style={styles.noteMeta}>
             <View style={styles.noteMetaLeft}>
-              {note.tags.length > 0 && (
+              {tags.length > 0 && (
                 <View style={styles.tagRow}>
-                  {note.tags.slice(0, 3).map(tag => (
+                  {tags.slice(0, 3).map(tag => (
                     <View key={tag} style={styles.tag}>
                       <Text style={styles.tagText}>#{tag}</Text>
                     </View>
                   ))}
-                  {note.tags.length > 3 && (
-                    <Text style={styles.moreTagsText}>+{note.tags.length - 3}</Text>
+                  {tags.length > 3 && (
+                    <Text style={styles.moreTagsText}>+{tags.length - 3}</Text>
                   )}
                 </View>
               )}
@@ -94,12 +99,12 @@ export const NoteCard = React.memo<NoteCardProps>(({ note, entityNames, onPress 
                 <View style={styles.noteTypeContent}>
                   <AppIcon name={icon} size={12} color={theme.text.secondary} />
                   <Text style={styles.noteTypeText}>
-                    {NOTE_TYPE_LABELS[note.note_type]}
+                    {NOTE_TYPE_LABELS[noteType]}
                   </Text>
                 </View>
               </View>
             </View>
-            <Text style={styles.wordCount}>{note.wordCount} words</Text>
+            <Text style={styles.wordCount}>{wordCount} words</Text>
           </View>
         </View>
       </View>

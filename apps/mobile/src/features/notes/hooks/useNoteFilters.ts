@@ -1,30 +1,30 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Note, NoteType } from '@features/notes/domain/entities/Note';
+import { NoteDetailDto, NoteType } from 'shared-types';
 
 const NOTE_TYPE_LABELS: Record<NoteType, string> = {
-  general: 'Note',
-  meeting: 'Meeting',
-  daily: 'Daily',
-  task: 'Task',
+  [NoteType.General]: 'Note',
+  [NoteType.Meeting]: 'Meeting',
+  [NoteType.Daily]: 'Daily',
+  [NoteType.Task]: 'Task',
 };
 
-export const useNoteFilters = (notes: Note[]) => {
+export const useNoteFilters = (notes: NoteDetailDto[]) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<NoteType | 'all'>('all');
-  const [filteredNotes, setFilteredNotes] = useState<Note[]>(notes);
+  const [filteredNotes, setFilteredNotes] = useState<NoteDetailDto[]>(notes);
 
   useEffect(() => {
     let filtered = notes;
 
     if (selectedType !== 'all') {
-      filtered = filtered.filter(n => n.note_type === selectedType);
+      filtered = filtered.filter((note) => (note.type ?? NoteType.General) === selectedType);
     }
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(n =>
-        n.title.toLowerCase().includes(query) ||
-        n.content.toLowerCase().includes(query)
+      filtered = filtered.filter((note) =>
+        note.title.toLowerCase().includes(query) ||
+        note.content.toLowerCase().includes(query)
       );
     }
 
