@@ -1199,6 +1199,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@cadence/shared@workspace:apps/shared":
+  version: 0.0.0-use.local
+  resolution: "@cadence/shared@workspace:apps/shared"
+  languageName: unknown
+  linkType: soft
+
+"@cadence/tui@workspace:apps/tui":
+  version: 0.0.0-use.local
+  resolution: "@cadence/tui@workspace:apps/tui"
+  languageName: unknown
+  linkType: soft
+
 "@colors/colors@npm:1.5.0":
   version: 1.5.0
   resolution: "@colors/colors@npm:1.5.0"
@@ -2769,18 +2781,6 @@ __metadata:
   checksum: 10c0/8883bb0ed22753af7360e9222687fda4eb448f0a574ea34b4596c11e320148b3ae0d24e00f8923df8ba7bc62a46a6f53b9343243a348640d923dfd55d52cd6bb
   languageName: node
   linkType: hard
-
-"@mprojectmanager/shared@workspace:apps/shared":
-  version: 0.0.0-use.local
-  resolution: "@mprojectmanager/shared@workspace:apps/shared"
-  languageName: unknown
-  linkType: soft
-
-"@mprojectmanager/tui@workspace:apps/tui":
-  version: 0.0.0-use.local
-  resolution: "@mprojectmanager/tui@workspace:apps/tui"
-  languageName: unknown
-  linkType: soft
 
 "@napi-rs/wasm-runtime@npm:^0.2.11":
   version: 0.2.12
@@ -6131,6 +6131,74 @@ __metadata:
   checksum: 10c0/c7da1ca694d20e8f8aedabd21dc11518f809a7d2b59aa76a1fc655db5a9e62379e465c157ddd2afe34b19230808882288effa6911b2de26a088a6d5645123462
   languageName: node
   linkType: hard
+
+"cadence-monorepo@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "cadence-monorepo@workspace:."
+  dependencies:
+    turbo: "npm:^2.4.4"
+  languageName: unknown
+  linkType: soft
+
+"cadence@workspace:apps/mobile":
+  version: 0.0.0-use.local
+  resolution: "cadence@workspace:apps/mobile"
+  dependencies:
+    "@babel/core": "npm:^7.28.5"
+    "@babel/plugin-proposal-decorators": "npm:^7.28.6"
+    "@react-native-async-storage/async-storage": "npm:^2.2.0"
+    "@react-native-community/cli": "npm:latest"
+    "@react-native-community/datetimepicker": "npm:8.4.4"
+    "@react-navigation/bottom-tabs": "npm:^7.3.0"
+    "@react-navigation/native": "npm:^7.1.18"
+    "@react-navigation/stack": "npm:^7.5.0"
+    "@testing-library/react-native": "npm:^13.3.3"
+    "@types/babel__core": "npm:^7.20.5"
+    "@types/jest": "npm:29.5.14"
+    "@types/js-yaml": "npm:^4.0.9"
+    "@types/react": "npm:~19.1.10"
+    "@types/react-test-renderer": "npm:^19.1.0"
+    babel-plugin-module-resolver: "npm:^5.0.2"
+    babel-plugin-transform-typescript-metadata: "npm:^0.4.0"
+    buffer: "npm:^6.0.3"
+    croner: "npm:^9.1.0"
+    expo: "npm:~54.0.31"
+    expo-auth-session: "npm:~7.0.10"
+    expo-background-fetch: "npm:~14.0.9"
+    expo-blur: "npm:~15.0.8"
+    expo-constants: "npm:^18.0.13"
+    expo-crypto: "npm:~15.0.8"
+    expo-file-system: "npm:~19.0.21"
+    expo-haptics: "npm:~15.0.8"
+    expo-intent-launcher: "npm:~13.0.8"
+    expo-linking: "npm:^8.0.11"
+    expo-notifications: "npm:~0.32.16"
+    expo-router: "npm:^6.0.22"
+    expo-secure-store: "npm:~15.0.8"
+    expo-status-bar: "npm:~3.0.9"
+    expo-task-manager: "npm:~14.0.9"
+    expo-web-browser: "npm:~15.0.10"
+    gray-matter: "npm:^4.0.3"
+    jest: "npm:~29.7.0"
+    jest-expo: "npm:~54.0.16"
+    js-yaml: "npm:^4.1.0"
+    react: "npm:19.1.0"
+    react-native: "npm:0.81.5"
+    react-native-gesture-handler: "npm:~2.28.0"
+    react-native-reanimated: "npm:~4.1.1"
+    react-native-safe-area-context: "npm:^5.6.1"
+    react-native-screens: "npm:~4.16.0"
+    react-native-svg: "npm:15.12.1"
+    react-native-worklets: "npm:0.5.1"
+    react-test-renderer: "npm:19.2.0"
+    reflect-metadata: "npm:^0.2.2"
+    shared-types: "workspace:*"
+    socket.io-client: "npm:^4.8.3"
+    tsyringe: "npm:^4.10.0"
+    typescript: "npm:~5.9.3"
+    yaml: "npm:^2.8.1"
+  languageName: unknown
+  linkType: soft
 
 "call-bind-apply-helpers@npm:^1.0.0, call-bind-apply-helpers@npm:^1.0.1, call-bind-apply-helpers@npm:^1.0.2":
   version: 1.0.2
@@ -11544,74 +11612,6 @@ __metadata:
   checksum: 10c0/46ea0f3ffa8bc6a5bc0c7081ffc3907777f0ed6516888d40a518c5111f8366d97d2678911ad1a6882bf592fa9de6c784fea32e1687bb94e1f4944170af48a5cf
   languageName: node
   linkType: hard
-
-"mprojectmanager-monorepo@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "mprojectmanager-monorepo@workspace:."
-  dependencies:
-    turbo: "npm:^2.4.4"
-  languageName: unknown
-  linkType: soft
-
-"mprojectmanager@workspace:apps/mobile":
-  version: 0.0.0-use.local
-  resolution: "mprojectmanager@workspace:apps/mobile"
-  dependencies:
-    "@babel/core": "npm:^7.28.5"
-    "@babel/plugin-proposal-decorators": "npm:^7.28.6"
-    "@react-native-async-storage/async-storage": "npm:^2.2.0"
-    "@react-native-community/cli": "npm:latest"
-    "@react-native-community/datetimepicker": "npm:8.4.4"
-    "@react-navigation/bottom-tabs": "npm:^7.3.0"
-    "@react-navigation/native": "npm:^7.1.18"
-    "@react-navigation/stack": "npm:^7.5.0"
-    "@testing-library/react-native": "npm:^13.3.3"
-    "@types/babel__core": "npm:^7.20.5"
-    "@types/jest": "npm:29.5.14"
-    "@types/js-yaml": "npm:^4.0.9"
-    "@types/react": "npm:~19.1.10"
-    "@types/react-test-renderer": "npm:^19.1.0"
-    babel-plugin-module-resolver: "npm:^5.0.2"
-    babel-plugin-transform-typescript-metadata: "npm:^0.4.0"
-    buffer: "npm:^6.0.3"
-    croner: "npm:^9.1.0"
-    expo: "npm:~54.0.31"
-    expo-auth-session: "npm:~7.0.10"
-    expo-background-fetch: "npm:~14.0.9"
-    expo-blur: "npm:~15.0.8"
-    expo-constants: "npm:^18.0.13"
-    expo-crypto: "npm:~15.0.8"
-    expo-file-system: "npm:~19.0.21"
-    expo-haptics: "npm:~15.0.8"
-    expo-intent-launcher: "npm:~13.0.8"
-    expo-linking: "npm:^8.0.11"
-    expo-notifications: "npm:~0.32.16"
-    expo-router: "npm:^6.0.22"
-    expo-secure-store: "npm:~15.0.8"
-    expo-status-bar: "npm:~3.0.9"
-    expo-task-manager: "npm:~14.0.9"
-    expo-web-browser: "npm:~15.0.10"
-    gray-matter: "npm:^4.0.3"
-    jest: "npm:~29.7.0"
-    jest-expo: "npm:~54.0.16"
-    js-yaml: "npm:^4.1.0"
-    react: "npm:19.1.0"
-    react-native: "npm:0.81.5"
-    react-native-gesture-handler: "npm:~2.28.0"
-    react-native-reanimated: "npm:~4.1.1"
-    react-native-safe-area-context: "npm:^5.6.1"
-    react-native-screens: "npm:~4.16.0"
-    react-native-svg: "npm:15.12.1"
-    react-native-worklets: "npm:0.5.1"
-    react-test-renderer: "npm:19.2.0"
-    reflect-metadata: "npm:^0.2.2"
-    shared-types: "workspace:*"
-    socket.io-client: "npm:^4.8.3"
-    tsyringe: "npm:^4.10.0"
-    typescript: "npm:~5.9.3"
-    yaml: "npm:^2.8.1"
-  languageName: unknown
-  linkType: soft
 
 "ms@npm:2.0.0":
   version: 2.0.0

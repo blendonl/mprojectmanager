@@ -1,5 +1,5 @@
 {
-  "name": "mprojectmanager-monorepo",
+  "name": "cadence-monorepo",
   "private": true,
   "packageManager": "yarn@4.10.3",
   "workspaces": [

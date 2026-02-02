@@ -1,5 +1,5 @@
 {
-  "name": "@mprojectmanager/tui",
+  "name": "@cadence/tui",
   "private": true,
   "scripts": {
     "build": "make build",
