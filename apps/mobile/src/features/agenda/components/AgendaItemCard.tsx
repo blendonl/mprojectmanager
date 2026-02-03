@@ -16,6 +16,7 @@ interface AgendaItemCardProps {
   onLongPress?: () => void;
   onToggleComplete?: () => void;
   sleepMode?: 'sleep' | 'wakeup';
+  mode?: 'default' | 'minimal';
 }
 
 type TaskType = 'regular' | 'meeting' | 'milestone' | null;
@@ -103,6 +104,7 @@ const AgendaItemCardComponent: React.FC<AgendaItemCardProps> = ({
   onLongPress,
   onToggleComplete,
   sleepMode,
+  mode = 'default',
 }) => {
   const isRoutineTask = !!item.routineTaskId;
   const hasTaskId = !!item.taskId;
@@ -177,6 +179,50 @@ const AgendaItemCardComponent: React.FC<AgendaItemCardProps> = ({
 
   const formattedActualSteps = formatStepValue(actualSteps);
   const formattedTargetSteps = formatStepValue(stepTarget || 0);
+
+  if (mode === 'minimal') {
+    const accentColor = typeMeta.color;
+    const metadata = useMemo(() => {
+      const parts: string[] = [];
+      if (timeLabel) parts.push(timeLabel);
+      if (item.duration) parts.push(formatDuration(item.duration) || '');
+      return parts.join(' • ');
+    }, [timeLabel, item.duration]);
+
+    return (
+      <TouchableOpacity
+        style={[styles.minimalCard, { borderLeftColor: accentColor }]}
+        onPress={onPress}
+        activeOpacity={0.7}
+      >
+        <View style={styles.minimalContent}>
+          <Text
+            style={[styles.minimalTitle, isCompleted && styles.titleCompleted]}
+            numberOfLines={1}
+          >
+            {taskTitle}
+          </Text>
+          {metadata && <Text style={styles.minimalMetadata}>{metadata}</Text>}
+        </View>
+        {onToggleComplete && (
+          <TouchableOpacity
+            style={[styles.minimalStatusButton, isCompleted && styles.completeToggleDone]}
+            onPress={e => {
+              e.stopPropagation();
+              onToggleComplete();
+            }}
+            activeOpacity={0.7}
+          >
+            <AppIcon
+              name="check"
+              size={12}
+              color={isCompleted ? theme.background.primary : theme.accent.success}
+            />
+          </TouchableOpacity>
+        )}
+      </TouchableOpacity>
+    );
+  }
 
   return (
     <TouchableOpacity
@@ -407,7 +453,8 @@ const arePropsEqual = (
     prevProps.onPress === nextProps.onPress &&
     prevProps.onLongPress === nextProps.onLongPress &&
     prevProps.onToggleComplete === nextProps.onToggleComplete &&
-    prevProps.sleepMode === nextProps.sleepMode
+    prevProps.sleepMode === nextProps.sleepMode &&
+    prevProps.mode === nextProps.mode
   );
 };
 
@@ -695,5 +742,44 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: theme.text.primary,
+  },
+  minimalCard: {
+    height: 36,
+    backgroundColor: theme.card.background,
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderColor: theme.card.border,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginBottom: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  minimalContent: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  minimalTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: theme.text.primary,
+  },
+  minimalMetadata: {
+    fontSize: 10,
+    color: theme.text.secondary,
+    marginTop: 2,
+  },
+  minimalStatusButton: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.accent.success,
+    backgroundColor: theme.card.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
   },
 });
