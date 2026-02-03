@@ -1,12 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
-  View,
   StyleSheet,
-  RefreshControl,
-  ActivityIndicator,
-  Text,
   Alert,
   TouchableOpacity,
+  Animated,
+  Text,
 } from 'react-native';
 import { Screen } from '@shared/components/Screen';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -25,18 +23,23 @@ import { AgendaHeaderCompact } from '@features/agenda/components/header/AgendaHe
 import { CalendarPickerModal } from '@features/agenda/components/header/CalendarPickerModal';
 import { AgendaTimelineView } from '@features/agenda/components/timeline/AgendaTimelineView';
 import { Timeline24Hour } from '@features/agenda/components/timeline/Timeline24Hour';
+import { LoadingSkeleton } from '@features/agenda/components/timeline/LoadingSkeleton';
 import { AllDaySection } from '@features/agenda/components/sections/AllDaySection';
 import { SpecialItemsHeader } from '@features/agenda/components/sections/SpecialItemsHeader';
 import { UnfinishedTasksBadge } from '@features/agenda/components/unfinished/UnfinishedTasksBadge';
 import { UnfinishedDrawer } from '@features/agenda/components/unfinished/UnfinishedDrawer';
 import { useWakeSleepTimes } from '@features/agenda/hooks/useWakeSleepTimes';
+import ErrorState from '@shared/components/ErrorState';
 import { useTimelineData } from '@features/agenda/hooks/useTimelineData';
 import { useTimelineScroll } from '@features/agenda/hooks/useTimelineScroll';
 import { useUnfinishedTasks } from '@features/agenda/hooks/useUnfinishedTasks';
+import { useSwipeGesture } from '@features/agenda/hooks/useSwipeGesture';
+import { useHaptics } from '@features/agenda/hooks/useHaptics';
 
 export default function AgendaScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const haptics = useHaptics();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedDayData, setSelectedDayData] = useState<AgendaItemsDayDto | null>(null);
   const [unfinishedItems, setUnfinishedItems] = useState<AgendaItemEnrichedDto[]>([]);
@@ -48,7 +51,7 @@ export default function AgendaScreen() {
   const [selectedTask, setSelectedTask] = useState<TaskDto | null>(null);
   const [lastRefreshTime, setLastRefreshTime] = useState(0);
 
-  const { wakeSleepTimes, loading: wakeSleepLoading } = useWakeSleepTimes();
+  const { wakeSleepTimes, loading: wakeSleepLoading, error: wakeSleepError, retry: retryWakeSleep } = useWakeSleepTimes();
   const timelineData = useTimelineData(selectedDayData, wakeSleepTimes);
   const flatListRef = useTimelineScroll(timelineData.hours, 60, !loading);
   const { isDrawerOpen, openDrawer, closeDrawer } = useUnfinishedTasks();
@@ -101,6 +104,17 @@ export default function AgendaScreen() {
     }
   }, [wakeSleepLoading]);
 
+  const hasAnyContent = useMemo(() => {
+    if (!selectedDayData) return false;
+    return (
+      (selectedDayData.tasks?.length ?? 0) > 0 ||
+      (selectedDayData.routines?.length ?? 0) > 0 ||
+      !!selectedDayData.sleep?.wakeup ||
+      (selectedDayData.steps?.length ?? 0) > 0 ||
+      unfinishedItems.length > 0
+    );
+  }, [selectedDayData, unfinishedItems]);
+
   useAutoRefresh(['agenda_invalidated'], refreshAgendaData);
 
   useFocusEffect(
@@ -121,20 +135,30 @@ export default function AgendaScreen() {
   }, [refreshAgendaData]);
 
   const goToPreviousDay = () => {
+    haptics.medium();
     const prev = new Date(selectedDate);
     prev.setDate(prev.getDate() - 1);
     setSelectedDate(prev);
   };
 
   const goToNextDay = () => {
+    haptics.medium();
     const next = new Date(selectedDate);
     next.setDate(next.getDate() + 1);
     setSelectedDate(next);
   };
 
   const goToToday = () => {
+    haptics.medium();
     setSelectedDate(new Date());
   };
+
+  const { panResponder, animatedStyle } = useSwipeGesture({
+    onSwipeLeft: goToNextDay,
+    onSwipeRight: goToPreviousDay,
+    threshold: 100,
+    enabled: !showTaskSelector && !showScheduleModal && !showCalendarPicker && !isDrawerOpen,
+  });
 
   const handleAgendaItemPress = useCallback(
     (agendaItem: AgendaItemEnrichedDto) => {
@@ -145,6 +169,7 @@ export default function AgendaScreen() {
 
   const handleAgendaItemLongPress = useCallback(
     (agendaItem: AgendaItemEnrichedDto) => {
+      haptics.medium();
       Alert.alert(
         agendaItem.task?.title || 'Agenda Item',
         'Choose an action',
@@ -157,6 +182,7 @@ export default function AgendaScreen() {
             text: 'Delete',
             style: 'destructive',
             onPress: async () => {
+              haptics.warning();
               Alert.alert(
                 'Delete Agenda Item',
                 'Are you sure you want to delete this scheduled item?',
@@ -167,6 +193,7 @@ export default function AgendaScreen() {
                     style: 'destructive',
                     onPress: async () => {
                       try {
+                        haptics.error();
                         const itemDate = getScheduledDate(agendaItem);
                         if (itemDate) {
                           await agendaApi.deleteAgendaItem(
@@ -176,6 +203,7 @@ export default function AgendaScreen() {
                           await loadSingleDay(itemDate);
                         }
                       } catch (error) {
+                        haptics.error();
                         console.error('Failed to delete agenda item:', error);
                         Alert.alert('Error', 'Failed to delete agenda item');
                       }
@@ -192,15 +220,17 @@ export default function AgendaScreen() {
         ]
       );
     },
-    [handleAgendaItemPress, loadSingleDay]
+    [handleAgendaItemPress, loadSingleDay, haptics]
   );
 
   const handleToggleComplete = useCallback(
     async (agendaItem: AgendaItemEnrichedDto) => {
       try {
         if (agendaItem.status === 'COMPLETED') {
+          haptics.light();
           await agendaApi.markAsUnfinished(agendaItem.agendaId, agendaItem.id);
         } else {
+          haptics.success();
           await agendaApi.completeAgendaItem(agendaItem.agendaId, agendaItem.id);
         }
         const itemDate = getScheduledDate(agendaItem);
@@ -208,11 +238,12 @@ export default function AgendaScreen() {
           await loadSingleDay(itemDate);
         }
       } catch (error) {
+        haptics.error();
         console.error('Failed to update agenda item status:', error);
         Alert.alert('Error', 'Failed to update agenda item status');
       }
     },
-    [loadSingleDay]
+    [loadSingleDay, haptics]
   );
 
   const handleTaskSelected = useCallback((task: TaskDto) => {
@@ -242,13 +273,44 @@ export default function AgendaScreen() {
     [loadSingleDay]
   );
 
+  const { wakeUpHour, sleepHour } = useMemo(() => {
+    const wake = wakeSleepTimes.wake
+      ? parseInt(wakeSleepTimes.wake.split(':')[0], 10)
+      : undefined;
+    const sleep = wakeSleepTimes.sleep
+      ? parseInt(wakeSleepTimes.sleep.split(':')[0], 10)
+      : undefined;
+    return { wakeUpHour: wake, sleepHour: sleep };
+  }, [wakeSleepTimes.wake, wakeSleepTimes.sleep]);
+
+  if (wakeSleepError && !loading) {
+    return (
+      <Screen hasTabBar>
+        <ErrorState
+          type="network"
+          title="Failed to Load Settings"
+          message="Unable to load wake/sleep times. Using default values (7 AM - 11 PM)."
+          error={wakeSleepError}
+          onRetry={retryWakeSleep}
+        />
+      </Screen>
+    );
+  }
+
   if (loading) {
     return (
       <Screen hasTabBar>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.accent.primary} />
-          <Text style={styles.loadingText}>Loading agenda...</Text>
-        </View>
+        <AgendaHeaderCompact
+          date={selectedDate}
+          onPreviousDay={goToPreviousDay}
+          onNextDay={goToNextDay}
+          onDatePress={() => {
+            haptics.light();
+            setShowCalendarPicker(true);
+          }}
+          onTodayPress={goToToday}
+        />
+        <LoadingSkeleton count={12} />
       </Screen>
     );
   }
@@ -262,33 +324,51 @@ export default function AgendaScreen() {
         date={selectedDate}
         onPreviousDay={goToPreviousDay}
         onNextDay={goToNextDay}
-        onDatePress={() => setShowCalendarPicker(true)}
+        onDatePress={() => {
+          haptics.light();
+          setShowCalendarPicker(true);
+        }}
         onTodayPress={goToToday}
       />
 
-      <AgendaTimelineView>
-        <SpecialItemsHeader
-          wakeupItem={wakeupItem}
-          stepItem={stepItem}
-          onItemPress={handleAgendaItemPress}
-          onItemLongPress={handleAgendaItemLongPress}
-          onToggleComplete={handleToggleComplete}
-        />
-
-        <AllDaySection
-          items={timelineData.allDayItems}
-          onItemPress={handleAgendaItemPress}
-          onToggleComplete={handleToggleComplete}
-        />
-
+      <Animated.View style={[{ flex: 1 }, animatedStyle]} {...panResponder.panHandlers}>
+        <AgendaTimelineView
+          isEmpty={!loading && !hasAnyContent}
+          selectedDate={selectedDate}
+          onScheduleTask={() => setShowTaskSelector(true)}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+        >
         <Timeline24Hour
           hours={timelineData.hours}
           itemsByHour={timelineData.itemsByHour}
           onItemPress={handleAgendaItemPress}
           onToggleComplete={handleToggleComplete}
           flatListRef={flatListRef}
+          selectedDate={selectedDate}
+          wakeUpHour={wakeUpHour}
+          sleepHour={sleepHour}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          headerComponent={
+            <>
+              <SpecialItemsHeader
+                wakeupItem={wakeupItem}
+                stepItem={stepItem}
+                onItemPress={handleAgendaItemPress}
+                onItemLongPress={handleAgendaItemLongPress}
+                onToggleComplete={handleToggleComplete}
+              />
+              <AllDaySection
+                items={timelineData.allDayItems}
+                onItemPress={handleAgendaItemPress}
+                onToggleComplete={handleToggleComplete}
+              />
+            </>
+          }
         />
       </AgendaTimelineView>
+      </Animated.View>
 
       <UnfinishedTasksBadge
         count={unfinishedItems.length}
@@ -298,7 +378,13 @@ export default function AgendaScreen() {
 
       <TouchableOpacity
         style={[styles.fab, { bottom: fabBottom }]}
-        onPress={() => setShowTaskSelector(true)}
+        onPress={() => {
+          haptics.light();
+          setShowTaskSelector(true);
+        }}
+        accessibilityLabel="Schedule new task"
+        accessibilityRole="button"
+        accessibilityHint="Opens task selector modal"
       >
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
@@ -343,15 +429,6 @@ export default function AgendaScreen() {
 }
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    color: theme.text.secondary,
-    marginTop: spacing.md,
-  },
   fab: {
     position: 'absolute',
     right: spacing.lg,
