@@ -40,11 +40,8 @@ const getAccentColor = (item: AgendaItemEnrichedDto): string => {
   return theme.accent.primary;
 };
 
-export const AgendaItemCardMinimal: React.FC<AgendaItemCardMinimalProps> = ({
-  item,
-  onPress,
-  onToggleComplete,
-}) => {
+export const AgendaItemCardMinimal = React.memo<AgendaItemCardMinimalProps>(
+  ({ item, onPress, onToggleComplete }) => {
   const isCompleted = isItemCompleted(item);
   const accentColor = useMemo(() => getAccentColor(item), [item]);
 
@@ -67,11 +64,17 @@ export const AgendaItemCardMinimal: React.FC<AgendaItemCardMinimalProps> = ({
     return parts.join(' • ');
   }, [timeLabel, durationLabel]);
 
+  const statusHitSlop = { top: 14, right: 14, bottom: 14, left: 14 };
+
   return (
     <TouchableOpacity
       style={[styles.card, { borderLeftColor: accentColor }]}
       onPress={onPress}
       activeOpacity={0.7}
+      accessibilityLabel={`${title}${metadata ? `, ${metadata}` : ''}`}
+      accessibilityRole="button"
+      accessibilityHint="Double tap to view details"
+      accessibilityState={{ selected: isCompleted }}
     >
       <View style={styles.content}>
         <Text
@@ -84,12 +87,19 @@ export const AgendaItemCardMinimal: React.FC<AgendaItemCardMinimalProps> = ({
       </View>
       {onToggleComplete && (
         <TouchableOpacity
-          style={[styles.statusButton, isCompleted && styles.statusButtonCompleted]}
+          style={[
+            styles.statusButton,
+            isCompleted && styles.statusButtonCompleted,
+          ]}
           onPress={e => {
             e.stopPropagation();
             onToggleComplete();
           }}
           activeOpacity={0.7}
+          hitSlop={statusHitSlop}
+          accessibilityLabel={isCompleted ? 'Mark as incomplete' : 'Mark as complete'}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: isCompleted }}
         >
           <AppIcon
             name="check"
@@ -100,7 +110,16 @@ export const AgendaItemCardMinimal: React.FC<AgendaItemCardMinimalProps> = ({
       )}
     </TouchableOpacity>
   );
-};
+  },
+  (prevProps, nextProps) => {
+    return (
+      prevProps.item.id === nextProps.item.id &&
+      prevProps.item.status === nextProps.item.status &&
+      prevProps.item.startAt === nextProps.item.startAt &&
+      prevProps.item.duration === nextProps.item.duration
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   card: {
