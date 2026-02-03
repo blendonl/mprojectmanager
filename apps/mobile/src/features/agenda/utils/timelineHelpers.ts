@@ -1,5 +1,6 @@
 import { AgendaItemEnrichedDto } from 'shared-types';
 import { getScheduledTime } from './agendaHelpers';
+import { safeParseHour, validateHourValue } from './timelineValidation';
 
 export interface WakeSleepTimes {
   wake: string;
@@ -19,15 +20,25 @@ export const parseSleepTarget = (target: string | null): WakeSleepTimes | null =
   if (!target) return null;
 
   const parts = target.split('-').map(t => t.trim());
-  if (parts.length !== 2) return null;
+  if (parts.length !== 2) {
+    console.warn(`Invalid sleep target format: ${target}`);
+    return null;
+  }
 
   const [sleep, wake] = parts;
-  if (!sleep || !wake) return null;
+  if (!sleep || !wake) {
+    console.warn(`Missing wake/sleep times in: ${target}`);
+    return null;
+  }
 
-  const sleepHour = parseInt(sleep.split(':')[0], 10);
-  const wakeHour = parseInt(wake.split(':')[0], 10);
+  // Use safe parsing with validation
+  const sleepHour = safeParseHour(sleep);
+  const wakeHour = safeParseHour(wake);
 
-  if (isNaN(sleepHour) || isNaN(wakeHour)) return null;
+  if (sleepHour === null || wakeHour === null) {
+    console.warn(`Failed to parse wake/sleep hours from: ${target}`);
+    return null;
+  }
 
   const isOvernight = sleepHour > wakeHour;
 
@@ -43,21 +54,10 @@ export const calculateTimelineHours = (
   sleepTime: string,
   isOvernight: boolean
 ): TimelineHour[] => {
-  const wakeHour = parseInt(wakeTime.split(':')[0], 10);
-  const sleepHour = parseInt(sleepTime.split(':')[0], 10);
-
-  const startHour = Math.max(0, wakeHour - 1);
-  let endHour: number;
-
-  if (isOvernight) {
-    endHour = Math.min(23, sleepHour + 1);
-  } else {
-    endHour = Math.min(23, sleepHour + 1);
-  }
-
   const hours: TimelineHour[] = [];
 
-  for (let hour = startHour; hour <= endHour; hour++) {
+  // Always show all 24 hours
+  for (let hour = 0; hour <= 23; hour++) {
     hours.push({
       hour,
       label: formatHourLabel(hour),
@@ -68,10 +68,45 @@ export const calculateTimelineHours = (
 };
 
 export const formatHourLabel = (hour: number): string => {
+  // Validate hour bounds
+  const validation = validateHourValue(hour);
+  if (!validation.isValid) {
+    console.warn(`Invalid hour value: ${hour}`, validation.error);
+    return '-- --';
+  }
+
   if (hour === 0) return '12 AM';
   if (hour === 12) return '12 PM';
   if (hour < 12) return `${hour} AM`;
   return `${hour - 12} PM`;
+};
+
+export const sortItemsWithinHour = (
+  items: AgendaItemEnrichedDto[]
+): AgendaItemEnrichedDto[] => {
+  return [...items].sort((a, b) => {
+    const timeA = getScheduledTime(a) || '00:00';
+    const timeB = getScheduledTime(b) || '00:00';
+
+    // Sort by time first (HH:MM format naturally sorts)
+    if (timeA !== timeB) {
+      return timeA.localeCompare(timeB);
+    }
+
+    // If same time, prioritize by type
+    const priorityA = getItemPriority(a);
+    const priorityB = getItemPriority(b);
+    return priorityA - priorityB;
+  });
+};
+
+const getItemPriority = (item: AgendaItemEnrichedDto): number => {
+  // Meetings first, then milestones, then tasks, then routines
+  if (item.task?.taskType === 'meeting') return 1;
+  if (item.task?.taskType === 'milestone') return 2;
+  if (item.taskId) return 3;
+  if (item.routineTaskId) return 4;
+  return 5;
 };
 
 export const groupItemsByHour = (
@@ -83,11 +118,20 @@ export const groupItemsByHour = (
     const timeStr = getScheduledTime(item);
     if (!timeStr) return;
 
-    const hour = parseInt(timeStr.split(':')[0], 10);
-    if (isNaN(hour)) return;
+    // Use safe parsing with validation
+    const hour = safeParseHour(timeStr);
+    if (hour === null) {
+      console.warn(`Skipping item ${item.id} with invalid time: ${timeStr}`);
+      return;
+    }
 
     const existing = grouped.get(hour) || [];
     grouped.set(hour, [...existing, item]);
+  });
+
+  // Sort items within each hour
+  grouped.forEach((items, hour) => {
+    grouped.set(hour, sortItemsWithinHour(items));
   });
 
   return grouped;
