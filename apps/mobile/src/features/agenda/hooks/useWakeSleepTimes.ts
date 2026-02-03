@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { routineApi } from '@features/routines/api/routineApi';
 import {
   WakeSleepTimes,
@@ -7,35 +7,56 @@ import {
   DEFAULT_SLEEP_TIME,
 } from '../utils/timelineHelpers';
 
-export const useWakeSleepTimes = () => {
+interface WakeSleepTimesHook {
+  wakeSleepTimes: WakeSleepTimes;
+  loading: boolean;
+  error: Error | null;
+  retry: () => Promise<void>;
+}
+
+export const useWakeSleepTimes = (): WakeSleepTimesHook => {
   const [wakeSleepTimes, setWakeSleepTimes] = useState<WakeSleepTimes>({
     wake: DEFAULT_WAKE_TIME,
     sleep: DEFAULT_SLEEP_TIME,
     isOvernight: false,
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    const fetchWakeSleepTimes = async () => {
-      try {
-        const routines = await routineApi.getRoutines();
-        const sleepRoutine = routines.find(routine => routine.type === 'SLEEP');
+  const fetchWakeSleepTimes = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        if (sleepRoutine && sleepRoutine.target) {
-          const parsed = parseSleepTarget(sleepRoutine.target);
-          if (parsed) {
-            setWakeSleepTimes(parsed);
-          }
+      const routines = await routineApi.getRoutines();
+      const sleepRoutine = routines.find(routine => routine.type === 'SLEEP');
+
+      if (sleepRoutine && sleepRoutine.target) {
+        const parsed = parseSleepTarget(sleepRoutine.target);
+        if (parsed) {
+          setWakeSleepTimes(parsed);
+        } else {
+          // Validation failed, use defaults
+          console.warn('Failed to parse sleep target, using defaults');
         }
-      } catch (error) {
-        console.error('Failed to fetch wake/sleep times:', error);
-      } finally {
-        setLoading(false);
       }
-    };
-
-    fetchWakeSleepTimes();
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      console.error('Failed to fetch wake/sleep times:', error);
+      setError(error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  return { wakeSleepTimes, loading };
+  useEffect(() => {
+    fetchWakeSleepTimes();
+  }, [fetchWakeSleepTimes]);
+
+  return {
+    wakeSleepTimes,
+    loading,
+    error,
+    retry: fetchWakeSleepTimes,
+  };
 };
