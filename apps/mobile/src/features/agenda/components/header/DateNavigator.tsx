@@ -28,23 +28,56 @@ export const DateNavigator: React.FC<DateNavigatorProps> = ({
   onDatePress,
   onTodayPress,
 }) => {
+  const buttonHitSlop = { top: 6, right: 6, bottom: 6, left: 6 };
+
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.arrowButton} onPress={onPreviousDay}>
+      <TouchableOpacity
+        style={styles.arrowButton}
+        onPress={onPreviousDay}
+        hitSlop={buttonHitSlop}
+        accessibilityLabel="Previous day"
+        accessibilityRole="button"
+        accessibilityHint="Navigate to the previous day"
+      >
         <AppIcon name="arrow-left" size={16} color={theme.text.primary} />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.dateButton} onPress={onDatePress}>
+      <TouchableOpacity
+        style={styles.dateButton}
+        onPress={onDatePress}
+        accessibilityLabel={`Selected date: ${formatDateLabel(date)}`}
+        accessibilityRole="button"
+        accessibilityHint="Open calendar picker"
+      >
         <Text style={styles.dateLabel}>{formatDateLabel(date)}</Text>
       </TouchableOpacity>
       <View style={styles.rightActions}>
-        <TouchableOpacity style={styles.iconButton} onPress={onDatePress}>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={onDatePress}
+          hitSlop={buttonHitSlop}
+          accessibilityLabel="Open calendar"
+          accessibilityRole="button"
+        >
           <AppIcon name="calendar" size={16} color={theme.text.secondary} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.todayButton} onPress={onTodayPress}>
+        <TouchableOpacity
+          style={styles.todayButton}
+          onPress={onTodayPress}
+          accessibilityLabel="Go to today"
+          accessibilityRole="button"
+        >
           <Text style={styles.todayText}>Today</Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.arrowButton} onPress={onNextDay}>
+      <TouchableOpacity
+        style={styles.arrowButton}
+        onPress={onNextDay}
+        hitSlop={buttonHitSlop}
+        accessibilityLabel="Next day"
+        accessibilityRole="button"
+        accessibilityHint="Navigate to the next day"
+      >
         <AppIcon name="arrow-right" size={16} color={theme.text.primary} />
       </TouchableOpacity>
     </View>

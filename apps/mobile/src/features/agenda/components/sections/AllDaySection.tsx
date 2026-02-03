@@ -6,6 +6,7 @@ import { theme } from '@shared/theme/colors';
 import { spacing } from '@shared/theme/spacing';
 import AppIcon from '@shared/components/icons/AppIcon';
 import { AgendaItemCardMinimal } from '../timeline/AgendaItemCardMinimal';
+import { useHaptics } from '../../hooks/useHaptics';
 
 interface AllDaySectionProps {
   items: AgendaItemEnrichedDto[];
@@ -21,6 +22,7 @@ export const AllDaySection: React.FC<AllDaySectionProps> = ({
   onToggleComplete,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const haptics = useHaptics();
 
   useEffect(() => {
     const loadCollapseState = async () => {
@@ -38,6 +40,7 @@ export const AllDaySection: React.FC<AllDaySectionProps> = ({
   }, []);
 
   const toggleCollapsed = async () => {
+    haptics.selection();
     const newState = !isCollapsed;
     setIsCollapsed(newState);
     try {
@@ -59,6 +62,10 @@ export const AllDaySection: React.FC<AllDaySectionProps> = ({
           isCollapsed && styles.headerCollapsed,
         ]}
         onPress={toggleCollapsed}
+        accessibilityLabel={`All Day tasks, ${items.length} ${items.length === 1 ? 'item' : 'items'}`}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: !isCollapsed }}
+        accessibilityHint={isCollapsed ? 'Double tap to expand' : 'Double tap to collapse'}
       >
         <View style={styles.headerLeft}>
           <Text style={styles.headerTitle}>All Day</Text>
@@ -103,7 +110,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.background.secondary,
   },
   headerCollapsed: {
-    height: 32,
+    height: 44,
+    opacity: 0.7,
   },
   headerLeft: {
     flexDirection: 'row',

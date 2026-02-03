@@ -19,11 +19,17 @@ export const UnfinishedTasksBadge: React.FC<UnfinishedTasksBadgeProps> = ({
     return null;
   }
 
+  const badgeHitSlop = { top: 6, right: 6, bottom: 6, left: 6 };
+
   return (
     <TouchableOpacity
       style={[styles.badge, { bottom: bottom + 70 }]}
       onPress={onPress}
       activeOpacity={0.7}
+      hitSlop={badgeHitSlop}
+      accessibilityLabel={`${count} unfinished ${count === 1 ? 'task' : 'tasks'}`}
+      accessibilityRole="button"
+      accessibilityHint="Double tap to view unfinished tasks"
     >
       <AppIcon name="alert" size={14} color={theme.background.primary} />
       <View style={styles.countBadge}>

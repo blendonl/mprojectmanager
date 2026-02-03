@@ -14,6 +14,7 @@ import { spacing } from "@shared/theme/spacing";
 import { AgendaEnrichedDto, AgendaItemEnrichedDto } from 'shared-types';
 import { AgendaSection } from "../types/agenda-screen.types";
 import { AgendaItemCard } from "./AgendaItemCard";
+import { CurrentTimeIndicator } from "./CurrentTimeIndicator";
 import { formatDateKey, formatSearchDateLabel } from "@shared/utils/date.utils";
 import { getScheduledDate, getScheduledTime, getOrphanedItems, isItemCompleted } from '../utils/agendaHelpers';
 
@@ -58,6 +59,11 @@ export function AgendaDayContent({
     [onItemPress, onItemLongPress, onToggleComplete],
   );
 
+  const isToday = useMemo(() => {
+    const today = new Date();
+    return selectedDate.toDateString() === today.toDateString();
+  }, [selectedDate]);
+
   const renderSectionHeader = useCallback(
     ({ section }: { section: AgendaSection }) => (
       <View style={styles.sectionHeader}>
@@ -74,9 +80,12 @@ export function AgendaDayContent({
             <Text style={styles.sectionCountText}>{section.data.length}</Text>
           </View>
         </View>
+        {section.title === "Time Blocks" && isToday && (
+          <CurrentTimeIndicator />
+        )}
       </View>
     ),
-    [],
+    [isToday],
   );
 
   const searchSections = useMemo(() => {
