@@ -19,14 +19,31 @@ export class AgendaItemCreateUseCase {
     private readonly agendaRepository: AgendaRepository,
   ) {}
 
+  private parseAgendaDate(value: string): Date | null {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+    const date = new Date(`${value}T00:00:00`);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
   async execute(agendaId: string, data: AgendaItemCreateData): Promise<AgendaItemWithLogs> {
     let agenda = await this.agendaRepository.findById(agendaId);
 
     if (!agenda) {
+      const agendaDateFromId = this.parseAgendaDate(agendaId);
+      if (agendaDateFromId) {
+        agenda = await this.agendaRepository.findByDate(agendaDateFromId);
+        if (!agenda) {
+          agenda = await this.agendaRepository.create({ date: agendaDateFromId });
+        }
+      }
+    }
+
+    if (!agenda) {
       const agendaDate = data.startAt || new Date();
       agenda = await this.agendaRepository.create({ date: agendaDate });
-      agendaId = agenda.id;
     }
+
+    agendaId = agenda.id;
 
     return this.agendaItemRepository.create(agendaId, data);
   }
