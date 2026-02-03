@@ -1,4 +1,4 @@
-import { NoteDto, NoteDetailDto, ProjectDto, BoardDto, TaskDto } from 'shared-types';
+import { NoteDto, NoteDetailDto, ProjectDto, BoardDto, TaskDto, NoteType } from 'shared-types';
 import { NoteFindOneData } from 'src/core/notes/data/note.find.one.data';
 import { BoardMapper } from '../boards/board.mapper';
 import { ProjectMapper } from '../projects/project.mapper';
@@ -12,7 +12,7 @@ export class NoteMapper {
 
     return {
       id: note.id,
-      type: note.type,
+      type: note.type as NoteType,
       title: note.title,
       content: note.content,
       preview,
