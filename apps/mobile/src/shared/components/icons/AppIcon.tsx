@@ -44,7 +44,9 @@ export type AppIconName =
   | 'check'
   | 'more'
   | 'add'
-  | 'x';
+  | 'x'
+  | 'sun'
+  | 'moon';
 
 interface AppIconProps {
   name: AppIconName;
@@ -411,6 +413,26 @@ export default function AppIcon({ name, size = 20, color, strokeWidth = 1.8 }: A
         <Svg width={size} height={size} viewBox={viewBox}>
           <Path d="M18 6L6 18" {...common} />
           <Path d="M6 6L18 18" {...common} />
+        </Svg>
+      );
+    case 'sun':
+      return (
+        <Svg width={size} height={size} viewBox={viewBox}>
+          <Circle cx="12" cy="12" r="4" {...common} />
+          <Path d="M12 2V4" {...common} />
+          <Path d="M12 20V22" {...common} />
+          <Path d="M4.93 4.93L6.34 6.34" {...common} />
+          <Path d="M17.66 17.66L19.07 19.07" {...common} />
+          <Path d="M2 12H4" {...common} />
+          <Path d="M20 12H22" {...common} />
+          <Path d="M6.34 17.66L4.93 19.07" {...common} />
+          <Path d="M19.07 4.93L17.66 6.34" {...common} />
+        </Svg>
+      );
+    case 'moon':
+      return (
+        <Svg width={size} height={size} viewBox={viewBox}>
+          <Path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" {...common} />
         </Svg>
       );
     default:

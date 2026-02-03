@@ -72,10 +72,13 @@ export const theme = {
   accent: {
     primary: CatppuccinColors.blue,
     secondary: CatppuccinColors.lavender,
+    tertiary: CatppuccinColors.mauve,
     success: CatppuccinColors.green,
     warning: CatppuccinColors.yellow,
     error: CatppuccinColors.red,
     info: CatppuccinColors.sapphire,
+    wake: CatppuccinColors.yellow,
+    sleep: CatppuccinColors.mauve,
   },
   // Status colors for alerts and badges
   status: {
