@@ -1,7 +1,7 @@
 import { AppIconName } from "@shared/components/icons/AppIcon";
 import { ScheduledAgendaItem } from "@features/agenda/domain/interfaces/AgendaService.interface";
 
-export type ViewMode = "week" | "month";
+export type ViewMode = "day" | "week" | "month";
 
 export type SearchMode = "all" | "unfinished";
 

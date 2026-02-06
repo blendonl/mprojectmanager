@@ -6,7 +6,8 @@ import { EmptyTimelineState } from './EmptyTimelineState';
 interface AgendaTimelineViewProps {
   children: React.ReactNode;
   isEmpty?: boolean;
-  selectedDate?: Date;
+  emptyStateLabel?: string;
+  emptyStateIsToday?: boolean;
   onScheduleTask?: () => void;
   refreshing?: boolean;
   onRefresh?: () => void;
@@ -15,12 +16,13 @@ interface AgendaTimelineViewProps {
 export const AgendaTimelineView: React.FC<AgendaTimelineViewProps> = ({
   children,
   isEmpty = false,
-  selectedDate,
+  emptyStateLabel,
+  emptyStateIsToday = false,
   onScheduleTask,
   refreshing = false,
   onRefresh,
 }) => {
-  if (isEmpty && selectedDate && onScheduleTask) {
+  if (isEmpty && emptyStateLabel && onScheduleTask) {
     return (
       <ScrollView
         style={styles.container}
@@ -37,7 +39,8 @@ export const AgendaTimelineView: React.FC<AgendaTimelineViewProps> = ({
         }
       >
         <EmptyTimelineState
-          date={selectedDate}
+          dateLabel={emptyStateLabel}
+          isToday={emptyStateIsToday}
           onScheduleTask={onScheduleTask}
         />
       </ScrollView>

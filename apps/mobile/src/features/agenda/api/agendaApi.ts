@@ -5,6 +5,8 @@ import {
   AgendaItemsFindAllResponse,
   AgendaItemCreateRequestDto,
   AgendaItemUpdateRequestDto,
+  AgendaViewMode,
+  AgendaViewResponseDto,
 } from 'shared-types';
 
 type AgendaItemCreateInput = AgendaItemCreateRequestDto & {
@@ -113,6 +115,16 @@ export const agendaApi = {
 
     return apiClient.request<AgendaItemsFindAllResponse>(
       `/agenda-items?${queryParts.join('&')}`
+    );
+  },
+
+  async getAgendaView(params: {
+    mode: AgendaViewMode;
+    anchorDate: string;
+    timezone: string;
+  }): Promise<AgendaViewResponseDto> {
+    return apiClient.request<AgendaViewResponseDto>(
+      `/agenda-views?mode=${params.mode}&anchorDate=${params.anchorDate}&timezone=${encodeURIComponent(params.timezone)}`
     );
   },
 

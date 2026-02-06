@@ -155,7 +155,7 @@ export const separateAllDayItems = (
 };
 
 export const calculateCurrentTimePosition = (
-  hours: TimelineHour[],
+  hours: Array<{ hour: number }>,
   hourSlotHeight: number
 ): { offsetY: number; hour: number; minute: number } | null => {
   const now = new Date();
@@ -184,7 +184,7 @@ export const getCurrentTime = (): { hour: number; minute: number } => {
 };
 
 export const isCurrentTimeVisible = (
-  hours: TimelineHour[],
+  hours: Array<{ hour: number }>,
   currentHour: number
 ): boolean => {
   return hours.some(h => h.hour === currentHour);

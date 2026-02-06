@@ -5,22 +5,18 @@ import {
   View,
   ListRenderItem,
   RefreshControl,
-  GestureResponderEvent,
-  PanResponderGestureState,
 } from 'react-native';
 import { theme } from '@shared/theme/colors';
-import { AgendaItemEnrichedDto } from 'shared-types';
-import { TimelineHour } from '../../utils/timelineHelpers';
+import { AgendaDayHourSlotDto, AgendaItemEnrichedDto } from 'shared-types';
 import { TimeSlot } from './TimeSlot';
 import { useCurrentTimePosition } from '../../hooks/useCurrentTimePosition';
 
 interface Timeline24HourProps {
-  hours: TimelineHour[];
-  itemsByHour: Map<number, AgendaItemEnrichedDto[]>;
+  slots: AgendaDayHourSlotDto[];
   onItemPress: (item: AgendaItemEnrichedDto) => void;
   onToggleComplete: (item: AgendaItemEnrichedDto) => void;
   flatListRef?: React.RefObject<FlatList | null>;
-  selectedDate?: Date;
+  isToday?: boolean;
   wakeUpHour?: number;
   sleepHour?: number;
   refreshing?: boolean;
@@ -31,29 +27,22 @@ interface Timeline24HourProps {
 const HOUR_SLOT_HEIGHT = 60;
 
 export const Timeline24Hour: React.FC<Timeline24HourProps> = ({
-  hours,
-  itemsByHour,
+  slots,
   onItemPress,
   onToggleComplete,
   flatListRef,
-  selectedDate,
+  isToday = false,
   wakeUpHour,
   sleepHour,
   refreshing = false,
   onRefresh,
   headerComponent,
 }) => {
-  const currentTimePosition = useCurrentTimePosition(hours, HOUR_SLOT_HEIGHT);
+  const currentTimePosition = useCurrentTimePosition(slots, HOUR_SLOT_HEIGHT);
 
-  const isToday = React.useMemo(() => {
-    if (!selectedDate) return true;
-    const today = new Date();
-    return selectedDate.toDateString() === today.toDateString();
-  }, [selectedDate]);
-
-  const renderItem: ListRenderItem<TimelineHour> = useCallback(
+  const renderItem: ListRenderItem<AgendaDayHourSlotDto> = useCallback(
     ({ item }) => {
-      const items = itemsByHour.get(item.hour) || [];
+      const items = item.items;
       const isWakeUpTime = wakeUpHour !== undefined && item.hour === wakeUpHour;
       const isSleepTime = sleepHour !== undefined && item.hour === sleepHour;
       const currentTimeOffset =
@@ -74,7 +63,7 @@ export const Timeline24Hour: React.FC<Timeline24HourProps> = ({
         />
       );
     },
-    [itemsByHour, onItemPress, onToggleComplete, wakeUpHour, sleepHour, isToday, currentTimePosition]
+    [onItemPress, onToggleComplete, wakeUpHour, sleepHour, isToday, currentTimePosition]
   );
 
   const getItemLayout = useCallback(
@@ -86,21 +75,12 @@ export const Timeline24Hour: React.FC<Timeline24HourProps> = ({
     []
   );
 
-  const keyExtractor = useCallback((item: TimelineHour) => `hour-${item.hour}`, []);
-  const shouldCaptureScroll = useCallback(
-    (_: GestureResponderEvent, gestureState: PanResponderGestureState) => {
-      const dx = Math.abs(gestureState.dx);
-      const dy = Math.abs(gestureState.dy);
-      return dy > dx;
-    },
-    []
-  );
-
+  const keyExtractor = useCallback((item: AgendaDayHourSlotDto) => `hour-${item.hour}`, []);
   return (
     <View style={styles.container}>
       <FlatList
         ref={flatListRef}
-        data={hours}
+        data={slots}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         getItemLayout={getItemLayout}
@@ -111,7 +91,6 @@ export const Timeline24Hour: React.FC<Timeline24HourProps> = ({
         removeClippedSubviews={false}
         showsVerticalScrollIndicator={false}
         scrollEnabled={true}
-        onMoveShouldSetResponderCapture={shouldCaptureScroll}
         contentContainerStyle={styles.contentContainer}
         refreshControl={
           onRefresh ? (

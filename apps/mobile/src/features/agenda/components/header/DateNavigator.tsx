@@ -5,24 +5,15 @@ import { spacing } from '@shared/theme/spacing';
 import AppIcon from '@shared/components/icons/AppIcon';
 
 interface DateNavigatorProps {
-  date: Date;
+  label: string;
   onPreviousDay: () => void;
   onNextDay: () => void;
   onDatePress: () => void;
   onTodayPress: () => void;
 }
 
-const formatDateLabel = (date: Date): string => {
-  return date.toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-};
-
 export const DateNavigator: React.FC<DateNavigatorProps> = ({
-  date,
+  label,
   onPreviousDay,
   onNextDay,
   onDatePress,
@@ -45,11 +36,11 @@ export const DateNavigator: React.FC<DateNavigatorProps> = ({
       <TouchableOpacity
         style={styles.dateButton}
         onPress={onDatePress}
-        accessibilityLabel={`Selected date: ${formatDateLabel(date)}`}
+        accessibilityLabel={`Selected date: ${label}`}
         accessibilityRole="button"
         accessibilityHint="Open calendar picker"
       >
-        <Text style={styles.dateLabel}>{formatDateLabel(date)}</Text>
+        <Text style={styles.dateLabel}>{label}</Text>
       </TouchableOpacity>
       <View style={styles.rightActions}>
         <TouchableOpacity

@@ -5,22 +5,16 @@ import { spacing } from '@shared/theme/spacing';
 import AppIcon from '@shared/components/icons/AppIcon';
 
 interface EmptyTimelineStateProps {
-  date: Date;
+  dateLabel: string;
+  isToday: boolean;
   onScheduleTask: () => void;
 }
 
 export const EmptyTimelineState: React.FC<EmptyTimelineStateProps> = ({
-  date,
+  dateLabel,
+  isToday,
   onScheduleTask,
 }) => {
-  const dateStr = date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
-
-  const isToday = date.toDateString() === new Date().toDateString();
-
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
@@ -29,7 +23,7 @@ export const EmptyTimelineState: React.FC<EmptyTimelineStateProps> = ({
       <Text style={styles.title}>
         {isToday ? 'No tasks scheduled today' : 'No tasks scheduled'}
       </Text>
-      <Text style={styles.subtitle}>{dateStr}</Text>
+      <Text style={styles.subtitle}>{dateLabel}</Text>
       <TouchableOpacity style={styles.button} onPress={onScheduleTask}>
         <AppIcon name="add" size={16} color={theme.background.primary} />
         <Text style={styles.buttonText}>Schedule a task</Text>

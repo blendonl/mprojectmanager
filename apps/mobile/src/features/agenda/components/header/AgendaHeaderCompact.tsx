@@ -5,7 +5,7 @@ import { spacing } from '@shared/theme/spacing';
 import { DateNavigator } from './DateNavigator';
 
 interface AgendaHeaderCompactProps {
-  date: Date;
+  label: string;
   onPreviousDay: () => void;
   onNextDay: () => void;
   onDatePress: () => void;
@@ -13,7 +13,7 @@ interface AgendaHeaderCompactProps {
 }
 
 export const AgendaHeaderCompact: React.FC<AgendaHeaderCompactProps> = ({
-  date,
+  label,
   onPreviousDay,
   onNextDay,
   onDatePress,
@@ -22,7 +22,7 @@ export const AgendaHeaderCompact: React.FC<AgendaHeaderCompactProps> = ({
   return (
     <View style={styles.container}>
       <DateNavigator
-        date={date}
+        label={label}
         onPreviousDay={onPreviousDay}
         onNextDay={onNextDay}
         onDatePress={onDatePress}

@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { FlatList } from 'react-native';
-import { TimelineHour, getCurrentTime } from '../utils/timelineHelpers';
+import { getCurrentTime } from '../utils/timelineHelpers';
 
 export const useTimelineScroll = (
-  hours: TimelineHour[],
+  hours: Array<{ hour: number }>,
   hourSlotHeight: number,
   enabled: boolean = true
 ) => {

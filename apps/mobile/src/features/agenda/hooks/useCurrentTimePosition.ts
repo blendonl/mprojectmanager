@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { TimelineHour, calculateCurrentTimePosition, getCurrentTime } from '../utils/timelineHelpers';
+import { calculateCurrentTimePosition } from '../utils/timelineHelpers';
 
 export interface CurrentTimePosition {
   offsetY: number;
@@ -8,7 +8,7 @@ export interface CurrentTimePosition {
 }
 
 export const useCurrentTimePosition = (
-  hours: TimelineHour[],
+  hours: Array<{ hour: number }>,
   hourSlotHeight: number
 ): CurrentTimePosition | null => {
   const [position, setPosition] = useState<CurrentTimePosition | null>(() =>
